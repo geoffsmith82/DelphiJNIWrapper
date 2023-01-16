@@ -316,8 +316,15 @@ GetDefaultArgs(@vmargs2);
       InitJava2;
       args := @vmargs2;
     end;
+    try
     if CreateVM(@pvm, @penv, args) <>0 then
       raise EJavaRuntimeCreation.Create('Could not create JVM');
+    except
+      on e: Exception do
+      begin
+        OutputDebugString(PChar(e.ClassName + ' ' + e.Message));
+      end;
+    end;
     TJavaVM.setThreadPenv(penv);
     FJavaVM := TJavaVM.Create(PVM);
     result := FJavaVM;
