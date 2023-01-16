@@ -243,27 +243,26 @@ JRE_18_KEY='\SOFTWARE\JavaSoft\JRE\10';
 
 function ReadRegKey(SubKey,Key:string):ansistring;
 var
-Reg: TRegistry;
-list1:TStringList;
-i:integer;
-
+  Reg: TRegistry;
+  list1:TStringList;
+  i:integer;
 begin
-list1:=TStringList.create;
-Reg := TRegistry.Create(KEY_READ or $0100); //open Registry
-try
-{try if Root key exists}
-Reg.RootKey := HKEY_LOCAL_MACHINE;
-{open the Registry key}
-if Reg.OpenKey(SubKey,false) then
-begin
-{read the value of the key HKEY_LOCAL_MACHINE\\Software\YourProgName\AnyParam }
-result:=Reg.ReadString(Key);
-end;
-finally
-Reg.CloseKey;
-Reg.Free;
-list1.free;
-end;
+  list1:=TStringList.create;
+  Reg := TRegistry.Create(KEY_READ or $0100); //open Registry
+  try
+    {try if Root key exists}
+    Reg.RootKey := HKEY_LOCAL_MACHINE;
+    {open the Registry key}
+    if Reg.OpenKey(SubKey,false) then
+    begin
+    {read the value of the key HKEY_LOCAL_MACHINE\\Software\YourProgName\AnyParam }
+    result:=Reg.ReadString(Key);
+    end;
+  finally
+    Reg.CloseKey;
+    Reg.Free;
+    list1.free;
+  end;
 end;
 
   procedure StripComments(var Line : AnsiString; var InComment : Boolean); forward;
@@ -289,8 +288,7 @@ end;
     vmargs.version := $00010008;
     vmargs2.version := $00010008;
     GetDefaultArgs(@vmargs);
-GetDefaultArgs(@vmargs2);
-
+    GetDefaultArgs(@vmargs2);
   end;
   
   function TJavaRuntime.GetVM : TJavaVM;
