@@ -50,8 +50,8 @@ TestObject,TestObject1 : TJavaObject;
 begin
 
 
-Runtime := TJavaRuntime.GetDefault;  
-//Runtime := TJavaRuntime.Create(SunJava2); 
+Runtime := TJavaRuntime.GetDefault;
+//Runtime := TJavaRuntime.Create(SunJava2);
 
        try
 
