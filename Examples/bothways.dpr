@@ -49,7 +49,7 @@ begin
     Runtime.Wait;
  
   except
-  on Exception do ShowException(ExceptObject, ExceptAddr);
+    on Exception do ShowException(ExceptObject, ExceptAddr);
   end;
 end.
 
