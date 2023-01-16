@@ -744,7 +744,7 @@ end;
 
 
 //WRITELN('\Software\JavaSoft\JDK\'+ReadRegKey('\SOFTWARE\JavaSoft\JDK','CurrentVersion'));
-if CheckJavaRegistryKey('\Software\JavaSoft\JDK\'+ReadRegKey('\SOFTWARE\JavaSoft\JDK','CurrentVersion'))
+if CheckJavaRegistryKey('\Software\JavaSoft\Java Development Kit\' + ReadRegKey('\SOFTWARE\JavaSoft\Java Development Kit','CurrentVersion'))
 then
  begin
   FJava11 := false; //This is a 1.2 VM.
@@ -752,7 +752,7 @@ then
   Exit;
  end;
 
-if CheckJavaRegistryKey('\Software\JavaSoft\JRE\'+ReadRegKey('\SOFTWARE\JavaSoft\JRE','CurrentVersion'))
+if CheckJavaRegistryKey('\Software\JavaSoft\Java Runtime Environment\'+ReadRegKey('\SOFTWARE\JavaSoft\Java Runtime Environment','CurrentVersion'))
 then 
 begin
   FJava11 := false; //This is a 1.2 VM.
