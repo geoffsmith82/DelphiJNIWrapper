@@ -39,10 +39,10 @@ unit JavaRuntime;
 
 interface
 {$IFDEF FPC}
-    uses Classes, Windows, Registry, SysUtils, JNI, JUtils, JNIWrapper;
-   {$ELSE}
-    uses System.Classes, WinAPI.Windows, System.Win.Registry, System.SysUtils, JNI, JUtils, JNIWrapper,System.AnsiStrings;
-   {$endif}
+uses Classes, Windows, Registry, SysUtils, JNI, JUtils, JNIWrapper;
+{$ELSE}
+uses System.Classes, WinAPI.Windows, System.Win.Registry, System.SysUtils, JNI, JUtils, JNIWrapper,System.AnsiStrings;
+{$endif}
 
 {$R-}
 
@@ -72,15 +72,15 @@ type
     // Given a name of a class and its filename, perform a sanity check
     // to see if the fully qualified classname is consistent with this
     // filename classpath-wise.
-    function sanityCheck(classname, filename : AnsiString) : AnsiString;
+    function SanityCheck(classname, filename : AnsiString) : AnsiString;
     // Performs similar sanity check on a .java file.
     function SanityCheckSource(filename : AnsiString) : AnsiString;
-    procedure addDir(dir : AnsiString);
-    procedure addPath(path : AnsiString);
+    procedure AddDir(dir : AnsiString);
+    procedure AddPath(path : AnsiString);
   public
     function FullPath : AnsiString;
-    class function getDefault : TClasspath;
-    class function getBootPath : TClasspath;
+    class function GetDefault : TClasspath;
+    class function GetBootPath : TClasspath;
   end;
 
     // class to encapsulate the location of the java runtime
@@ -109,41 +109,41 @@ type
     function FindMSJava : Boolean;
     function CheckJavaRegistryKey(key : AnsiString) : boolean;
     function GetClasspath : AnsiString;
-    procedure setClasspath(S: AnsiString);
+    procedure SetClasspath(S: AnsiString);
     procedure SetNativeStackSize(Size : Integer);
     procedure SetJavaStackSize(Size : Integer);
-    procedure setMinHeapSize(Size : Integer);
-    procedure setMaxHeapSize(Size : Integer);
-    procedure setVerifyMode(Arg : Integer);
+    procedure SetMinHeapSize(Size : Integer);
+    procedure SetMaxHeapSize(Size : Integer);
+    procedure SetVerifyMode(Arg : Integer);
     procedure SetCheckSource(arg : Integer);
     procedure SetEnableClassGC(B : Boolean);
-    procedure setVerboseGC(B:Boolean);
+    procedure SetVerboseGC(B: Boolean);
     procedure SetDisableAsyncGC(B: Boolean);
-    procedure setVerbose(B : Boolean);
-    procedure setDebugPort(Port : Integer);
-    procedure setDebugging(Arg : Integer);
-    procedure setAbortProc(proc : TAbortProc);
-    procedure setExitProc(proc : TExitProc);
-    procedure setPrintf(printproc : TPrintf);
+    procedure SetVerbose(B : Boolean);
+    procedure SetDebugPort(Port : Integer);
+    procedure SetDebugging(Arg : Integer);
+    procedure SetAbortProc(proc : TAbortProc);
+    procedure SetExitProc(proc : TExitProc);
+    procedure SetPrintf(printproc : TPrintf);
     procedure Initialize; // Loads the DLL.
     procedure InitJava11;
     procedure InitJava2;
   public
     // processes a command-line option
-    procedure processCommandLineOption(S : AnsiString);
+    procedure ProcessCommandLineOption(S : AnsiString);
     // processes a bunch of command line options passed in a container.
-    procedure processCommandLine(Options : TStrings);
-    procedure addProperty(S: AnsiString);
-    function sanityCheck(classname, filename : AnsiString) : AnsiString;
-    function sanityCheckSource(filename : AnsiString) : AnsiString;
-    procedure addToClasspath(filename : AnsiString);
+    procedure ProcessCommandLine(Options : TStrings);
+    procedure AddProperty(S: AnsiString);
+    function SanityCheck(classname, filename : AnsiString) : AnsiString;
+    function SanityCheckSource(filename : AnsiString) : AnsiString;
+    procedure AddToClasspath(filename : AnsiString);
     function GetVM : TJavaVM; //Instantiates the JVM
     procedure CallMain(const ClassName : AnsiString ; args : TStrings);
     procedure CallExit(val : Integer);
     procedure Wait;
     property RuntimeLib : AnsiString read FRuntimeLib;
     property JavaHome : AnsiString read FJavaHome;
-    property Classpath : AnsiString read getClasspath write setClasspath;
+    property Classpath : AnsiString read getClasspath write SetClasspath;
     property IsJava11 : Boolean read FJava11;
     property IsMS : Boolean read FMS;
     property Hotspot : Boolean read FHotspot write FHotspot;
@@ -152,41 +152,41 @@ type
     property NativeStackSize : Integer write SetNativeStackSize;
     property JavaStackSize : Integer write SetJavaStackSize;
     property CheckSource : Integer write setCheckSource;
-    property MinHeapSize : Integer write setMinHeapSize;
-    property MaxHeapSize : Integer write setMaxHeapSize;
-    property VerifyMode : Integer write setVerifyMode;
+    property MinHeapSize : Integer write SetMinHeapSize;
+    property MaxHeapSize : Integer write SetMaxHeapSize;
+    property VerifyMode : Integer write SetVerifyMode;
     property EnableClassGC : Boolean write setEnableClassGC;
-    property VerboseGC : Boolean write setVerboseGC;
+    property VerboseGC : Boolean write SetVerboseGC;
     property DisableAsyncGC : Boolean write setDisableAsyncGC;
-    property Verbose : Boolean write setVerbose;
-    property DebugPort : Integer write setDebugPort;
-    property Debugging : Integer write setDebugging;
-    property AbortProc : TAbortProc write setAbortProc;
-    property ExitProc : TexitProc write setExitProc;
-    property Printf : TPrintf write setPrintf;
+    property Verbose : Boolean write SetVerbose;
+    property DebugPort : Integer write SetDebugPort;
+    property Debugging : Integer write SetDebugging;
+    property AbortProc : TAbortProc write SetAbortProc;
+    property ExitProc : TexitProc write SetExitProc;
+    property Printf : TPrintf write SetPrintf;
     
     constructor Create(option : JvmType);
     destructor Destroy; override;
     class function GetDefault : TJavaRuntime;
     class procedure SetJava11(Java11 : Boolean);
     class procedure SetMSJava(MSJava : Boolean);
-    class procedure setAppClassPath(path : AnsiString);
-    class procedure setBasePath(path : AnsiString);
-    class procedure setNeedTools(B : Boolean); // a bit of a hack for use by SmartJC.
+    class procedure SetAppClassPath(path : AnsiString);
+    class procedure SetBasePath(path : AnsiString);
+    class procedure SetNeedTools(B : Boolean); // a bit of a hack for use by SmartJC.
     class procedure SetClassicVM(B : Boolean);
   end;
   
-  function getPackageName(filename : AnsiString) : AnsiString;
+  function GetPackageName(filename : AnsiString) : AnsiString;
 
 implementation
 
 var
- {$IFDEF FPC}
+  {$IFDEF FPC}
   SystemDirBuf : Array[0..MAX_PATH] of AnsiChar;
- {$ELSE}
+  {$ELSE}
   SystemDirBuf : Array[0..MAX_PATH] of AnsiChar;
   {$ENDIF}
- NeedsJDK : Boolean; // // True, if we need the sun.* classes for compilation, etc.
+  NeedsJDK : Boolean; // // True, if we need the sun.* classes for compilation, etc.
   Prefers11 : Boolean; // Do we look for java 1.1 first?
   PrefersMS : Boolean; // Do we look for MS JVM first?
   UseClassicVM : Boolean; // Do we use the classic VM?
@@ -208,35 +208,35 @@ const
   IBM_JDK_118_KEY = '\SOFTWARE\IBM\IBM WIN32 Developer Kit, Java(TM) Tech. Edition\1.1.8';
   JRE_11_KEY = '\SOFTWARE\JavaSoft\Java Runtime Environment\1.1'; //JavaHome, Microversion
   JB_KEY = '\SOFTWARE\JavaSoft\Java Runtime\1.1.6'; //JavaHome
- // JDK_11_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.1'; 
-JDK_11_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.8.0_45'; //JavaHome, Microversion
-//JavaHome, Microversion
+  // JDK_11_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.1';
+  JDK_11_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.8.0_45'; //JavaHome, Microversion
+  //JavaHome, Microversion
   JRE_12_KEY = '\SOFTWARE\JavaSoft\Java Runtime Environment\1.2'; // JavaHome, RuntimeLib
   JRE_13_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.3';
   //JRE_14_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.4';
-//JRE_14_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.8.0_45';
-//JRE_15_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.7.0_25';
-JRE_14_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.8';
-JRE_15_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.7';
-JRE_16_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.6';
-JRE_17_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.5';
-JRE_18_KEY='\SOFTWARE\JavaSoft\JRE\10';
+  //JRE_14_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.8.0_45';
+  //JRE_15_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.7.0_25';
+  JRE_14_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.8';
+  JRE_15_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.7';
+  JRE_16_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.6';
+  JRE_17_KEY='\SOFTWARE\JavaSoft\Java Runtime Environment\1.5';
+  JRE_18_KEY='\SOFTWARE\JavaSoft\JRE\10';
 
   PLUGIN_12_KEY = '\SOFTWARE\JavaSoft\Java Plug-in\1.2'; // JavaHome, RuntimeLib
   PLUGIN_13_KEY = '\SOFTWARE\JavaSoft\Java Plug-in\1.3'; // JavaHome, RuntimeLib
-//PLUGIN_14_KEY = '\SOFTWARE\JavaSoft\Java Plug-in\1.4';
+  //PLUGIN_14_KEY = '\SOFTWARE\JavaSoft\Java Plug-in\1.4';
   PLUGIN_14_KEY = '\SOFTWARE\JavaSoft\Java Plug-in\11.45.2';
   PLUGIN_15_KEY = '\SOFTWARE\JavaSoft\Java Plug-in\10.25.2';
  
   JDK_12_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.2'; //JavaHome, Microversion
   JDK_13_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.3';
   JDK_14_KEY = '\SOFTWARE\JavaSoft\Java Development Kit\1.4';
- JDK_15_KEY = '\SOFTWARE\JavaSoft\JDK\10'; 
+  JDK_15_KEY = '\SOFTWARE\JavaSoft\JDK\10';
 
 
-   JRE11Keys : array[1..3] of AnsiString = (PLUGIN_11_KEY, IBM_JRE_11_KEY, JRE_11_KEY);
- JDK11Keys : array[1..5] of AnsiString = (JDK_15_KEY,IBM_JDK_118_KEY, IBM_JDK_117_KEY,JDK_11_KEY,JB_KEY);
- JRE12Keys : array[1..11] of AnsiString = (JRE_18_KEY,JRE_14_KEY, PLUGIN_14_KEY,JRE_15_KEY, PLUGIN_15_KEY,JRE_16_KEY,JRE_17_KEY,JRE_13_KEY, PLUGIN_13_KEY, JRE_12_KEY, PLUGIN_12_KEY);
+  JRE11Keys : array[1..3] of AnsiString = (PLUGIN_11_KEY, IBM_JRE_11_KEY, JRE_11_KEY);
+  JDK11Keys : array[1..5] of AnsiString = (JDK_15_KEY,IBM_JDK_118_KEY, IBM_JDK_117_KEY,JDK_11_KEY,JB_KEY);
+  JRE12Keys : array[1..11] of AnsiString = (JRE_18_KEY,JRE_14_KEY, PLUGIN_14_KEY,JRE_15_KEY, PLUGIN_15_KEY,JRE_16_KEY,JRE_17_KEY,JRE_13_KEY, PLUGIN_13_KEY, JRE_12_KEY, PLUGIN_12_KEY);
 
   BootClasspath : AnsiString = '';
 
@@ -244,10 +244,9 @@ JRE_18_KEY='\SOFTWARE\JavaSoft\JRE\10';
 function ReadRegKey(SubKey,Key:string):ansistring;
 var
   Reg: TRegistry;
-  list1:TStringList;
-  i:integer;
+  list1: TStringList;
 begin
-  list1:=TStringList.create;
+  list1 := TStringList.create;
   Reg := TRegistry.Create(KEY_READ or $0100); //open Registry
   try
     {try if Root key exists}
@@ -255,8 +254,8 @@ begin
     {open the Registry key}
     if Reg.OpenKey(SubKey,false) then
     begin
-    {read the value of the key HKEY_LOCAL_MACHINE\\Software\YourProgName\AnyParam }
-    result:=Reg.ReadString(Key);
+      {read the value of the key HKEY_LOCAL_MACHINE\\Software\YourProgName\AnyParam }
+      Result := Reg.ReadString(Key);
     end;
   finally
     Reg.CloseKey;
@@ -271,12 +270,12 @@ end;
   begin
     if DLLHandle <> 0 then
       exit; // already initialized.
-    
-{$IFDEF FPC}
+
+    {$IFDEF FPC}
     DLLHandle := LoadLibrary(PChar(FRuntimeLib));
-   {$ELSE}
+    {$ELSE}
     DLLHandle := SafeLoadLibrary(FRuntimeLib);
-   {$endif}
+    {$endif}
 
     if DLLHandle = 0 then 
       raise EJavaRuntimeCreation.Create('Could not load DLL ' + FRuntimeLib);
@@ -316,7 +315,7 @@ end;
     end;
     if CreateVM(@pvm, @penv, args) <>0 then
       raise EJavaRuntimeCreation.Create('Could not create JVM');
-    TJavaVM.setThreadPenv(penv);
+    TJavaVM.SetThreadPenv(penv);
     FJavaVM := TJavaVM.Create(PVM);
     result := FJavaVM;
   end;
@@ -502,787 +501,784 @@ end;
   end;
 
   
-  //convenience wrappers.
+//convenience wrappers.
   
-  procedure TJavaRuntime.CallMain(const ClassName : AnsiString ; args : TStrings);
-  begin
-    TJavaVM.CallMain(className, args);
-  end;
+procedure TJavaRuntime.CallMain(const ClassName : AnsiString ; args : TStrings);
+begin
+  TJavaVM.CallMain(className, args);
+end;
   
-  procedure TJavaRuntime.Wait;
+procedure TJavaRuntime.Wait;
+begin
+  if FJavaVM <> Nil then
   begin
-    if FJavaVM <> Nil then 
-    begin
-      if isMS then 
-        Sleep(INFINITE)
-      else 
-        FJavaVM.Wait;
-    end;
+    if isMS then
+      Sleep(INFINITE)
+    else
+      FJavaVM.Wait;
   end;
+end;
   
-  procedure TJavaRuntime.CallExit(val : Integer);
-  begin
-    TJavaVm.CallExit(val);
-  end;
+procedure TJavaRuntime.CallExit(val : Integer);
+begin
+  TJavaVm.CallExit(val);
+end;
 
-  procedure TJavaRuntime.processCommandLineOption(S : AnsiString);
-  var
- //S:String;
-    L  : String;
-    function extractSize(S : AnsiString) : Integer;
-    begin
-      if S[length(S)] = 'k' 
-        then Result := $400
-      else 
-        if S[length(S)] = 'm' 
-          then Result := $100000
-        else Result  := 1;
-      if Result<>1 
-        then S:= Copy(S, 1, length(S)-1);
-      Result := Result * StrToIntDef(S, 0);
-    end;
+procedure TJavaRuntime.ProcessCommandLineOption(S : AnsiString);
+var
+//S:String;
+  L  : String;
+  function extractSize(S : AnsiString) : Integer;
   begin
-   //S:=S1;
-    L  := LowerCase(S);
-    if (L = '-v') or (L = 'verbose') 
-      then Verbose := true
-    else if (L = '-verbosegc') 
-      then VerboseGC := true
-    else if (L = '-noasync') 
-      then DisableAsyncGC := true
-    else if (L = '-noclassgc') 
-      then EnableClassGC := false
-    else if (L = '-verify') 
-      then VerifyMode := 2
-    else if (L = '-noverify') 
-      then VerifyMode := 0
-    else if (L = '-verifyremote') 
-      then VerifyMode :=1
-    else if (L = '-nojit') 
-      then addProperty('java.compiler=')
-    else if Copy(L, 1, 3) = '-cp' 
-      then FClasspath.addPath(Copy(S, 5, length(S)))
-    else if Copy(L, 1, 10) = '-classpath' 
-      then FClasspath.addPath(Copy(S, 12, length(S)))
-    else if Copy(L, 1, 2) = '-d' 
-      then addProperty(Copy(S, 3, length(S)))
-    else if Copy(L, 1, 3) = '-ms' 
-      then MinHeapSize := ExtractSize(Copy(L, 4, length(L)))
-    else if Copy(L, 1, 3) = '-mx' 
-      then MaxHeapSize := ExtractSize(Copy(L, 4, length(L)))
-    else if Copy(L, 1, 3) = '-ss' 
-      then NativeStackSize := ExtractSize(Copy(L, 4, length(L)))
-    else if Copy(L, 1, 3) = '-oss' 
-      then NativeStackSize := ExtractSize(Copy(L, 5, length(L)));
+    if S[length(S)] = 'k'
+      then Result := $400
+    else
+      if S[length(S)] = 'm'
+        then Result := $100000
+      else Result  := 1;
+    if Result<>1
+      then S:= Copy(S, 1, length(S)-1);
+    Result := Result * StrToIntDef(S, 0);
   end;
+begin
+ //S:=S1;
+  L  := LowerCase(S);
+  if (L = '-v') or (L = 'verbose')
+    then Verbose := true
+  else if (L = '-verbosegc')
+    then VerboseGC := true
+  else if (L = '-noasync')
+    then DisableAsyncGC := true
+  else if (L = '-noclassgc')
+    then EnableClassGC := false
+  else if (L = '-verify')
+    then VerifyMode := 2
+  else if (L = '-noverify')
+    then VerifyMode := 0
+  else if (L = '-verifyremote')
+    then VerifyMode :=1
+  else if (L = '-nojit')
+    then AddProperty('java.compiler=')
+  else if Copy(L, 1, 3) = '-cp'
+    then FClasspath.AddPath(Copy(S, 5, length(S)))
+  else if Copy(L, 1, 10) = '-classpath'
+    then FClasspath.AddPath(Copy(S, 12, length(S)))
+  else if Copy(L, 1, 2) = '-d'
+    then AddProperty(Copy(S, 3, length(S)))
+  else if Copy(L, 1, 3) = '-ms'
+    then MinHeapSize := ExtractSize(Copy(L, 4, length(L)))
+  else if Copy(L, 1, 3) = '-mx'
+    then MaxHeapSize := ExtractSize(Copy(L, 4, length(L)))
+  else if Copy(L, 1, 3) = '-ss'
+    then NativeStackSize := ExtractSize(Copy(L, 4, length(L)))
+  else if Copy(L, 1, 3) = '-oss'
+    then NativeStackSize := ExtractSize(Copy(L, 5, length(L)));
+end;
   
-  procedure TJavaRuntime.processCommandLine(Options : TStrings);
-  var
-    I: Integer;
-  begin
-    for I:= 0 to Options.Count-1 do 
-      processCommandLineOption(Options[I]);
-  end;
+procedure TJavaRuntime.ProcessCommandLine(Options : TStrings);
+var
+  I: Integer;
+begin
+  for I:= 0 to Options.Count-1 do
+    ProcessCommandLineOption(Options[I]);
+end;
   
-  class function TJavaRuntime.GetDefault : TJavaRuntime;
-  var
-    FirstChoice, SecondChoice, ThirdChoice, temp : JvmType;
-  begin
+class function TJavaRuntime.GetDefault : TJavaRuntime;
+var
+  FirstChoice, SecondChoice, ThirdChoice, temp : JvmType;
+begin
  
-    if DefaultRuntime = Nil then
+  if DefaultRuntime = Nil then
+  begin
+    FirstChoice := SunJava2;
+    SecondChoice := SunJava1;
+    ThirdChoice := MSJava;
+    if PrefersMS then
     begin
-      FirstChoice := SunJava2;
-      SecondChoice := SunJava1;
-      ThirdChoice := MSJava;
-      if PrefersMS then
-      begin
-        FirstChoice := MSJava;
-        SecondChoice := SunJava2;
-        ThirdChoice := SunJava1;
-      end;
-      if Prefers11 then
-      begin
-        temp := FirstChoice;
-        FirstChoice := SunJava1;
-        SecondChoice := Temp;
-      end;
+      FirstChoice := MSJava;
+      SecondChoice := SunJava2;
+      ThirdChoice := SunJava1;
+    end;
+    if Prefers11 then
+    begin
+      temp := FirstChoice;
+      FirstChoice := SunJava1;
+      SecondChoice := Temp;
+    end;
+    try
+      DefaultRuntime := TJavaRuntime.Create(FirstChoice);
+    except on EJavaRuntimeNotFound do
       try
-        DefaultRuntime := TJavaRuntime.Create(FirstChoice);
+        DefaultRuntime := TJavaRuntime.Create(SecondChoice);
       except on EJavaRuntimeNotFound do
-        try
-          DefaultRuntime := TJavaRuntime.Create(SecondChoice);
-        except on EJavaRuntimeNotFound do
-          DefaultRuntime :=TJavaRuntime.Create(ThirdChoice);
-        end;
+        DefaultRuntime :=TJavaRuntime.Create(ThirdChoice);
       end;
     end;
-    result := DefaultRuntime;
   end;
+  Result := DefaultRuntime;
+end;
 
-  class procedure TJavaRuntime.SetJava11(Java11 : Boolean);
-  begin
-    Prefers11 := Java11;
-  end;
+class procedure TJavaRuntime.SetJava11(Java11 : Boolean);
+begin
+  Prefers11 := Java11;
+end;
 
-  class procedure TJavaRuntime.SetClassicVM(B : Boolean);
-  begin
-    UseClassicVM := B;
-  end;
+class procedure TJavaRuntime.SetClassicVM(B : Boolean);
+begin
+  UseClassicVM := B;
+end;
   
-  class procedure TJavaRuntime.SetMSJava(MSJava : Boolean);
-  begin
-    PrefersMS := MSJava;
-  end;
+class procedure TJavaRuntime.SetMSJava(MSJava : Boolean);
+begin
+  PrefersMS := MSJava;
+end;
   
-  class procedure TJavaRuntime.setNeedTools(B : Boolean);
-  begin
-    NeedsJDK := True;
-  end;
+class procedure TJavaRuntime.SetNeedTools(B : Boolean);
+begin
+  NeedsJDK := True;
+end;
 
-  procedure TJavaRuntime.addToClasspath(filename : AnsiString);
-  begin
-    FClasspath.addDir(filename);
-  end;
+procedure TJavaRuntime.AddToClasspath(filename : AnsiString);
+begin
+  FClasspath.AddDir(filename);
+end;
   
-  function TJavaRuntime.getClasspath : AnsiString;
-  var
-    CPath : TClasspath;
-    Reg : TRegistry;
-    GotKey : Boolean;
+function TJavaRuntime.getClasspath : AnsiString;
+var
+  CPath : TClasspath;
+  Reg : TRegistry;
+  GotKey : Boolean;
+begin
+  CPath := TClasspath.GetDefault;
+  if ((not FJava11) and NeedsJDK) then
   begin
-    CPath := TClasspath.getDefault;
-    if ((not FJava11) and NeedsJDK) then 
+    reg := TRegistry.Create;
+    reg.RootKey := HKEY_LOCAL_MACHINE;
+    GotKey := Reg.OpenKey(JDK_13_KEY, false);
+  
+    if not GotKey then
+      GotKey := Reg.OpenKey(JDK_12_KEY, false);
+    if GotKey then
     begin
-      reg := TRegistry.Create;
-      reg.RootKey := HKEY_LOCAL_MACHINE;
-      GotKey := Reg.OpenKey(JDK_13_KEY, false);
-  
-      if not GotKey then
-        GotKey := Reg.OpenKey(JDK_12_KEY, false);
-      if GotKey then
-      begin
-        if reg.ValueExists('JavaHome') then 
-          CPath.addDir(reg.ReadString('JavaHome') + '\lib\tools.jar');
-      end;
-      reg.Free;
+      if reg.ValueExists('JavaHome') then
+        CPath.AddDir(reg.ReadString('JavaHome') + '\lib\tools.jar');
     end;
-    result := CPath.Fullpath;
+    reg.Free;
   end;
+  result := CPath.Fullpath;
+end;
   
-  procedure TJavaRuntime.setClasspath(S : AnsiString);
-  begin
-    FClasspath := TClasspath.getDefault;
-    FClasspath.addPath(S);
-  end;
+procedure TJavaRuntime.SetClasspath(S : AnsiString);
+begin
+  FClasspath := TClasspath.GetDefault;
+  FClasspath.AddPath(S);
+end;
   
-  constructor TJavaRuntime.Create(option : JvmType);
-  begin
-    if DefaultRuntime <> Nil then
-      raise EJavaRuntimeCreation.Create('Can only instantiate one Java runtime per process');
-    case option of
-      SunJava1 :
-        if not FindJava11 then
-          raise EJavaRuntimeNotFound.Create('Java 1.1 runtime not found');
-       SunJava2:
-        if not FindJava12 then
-          raise EJavaRuntimeNotFOund.Create('Java 2 runtime not found');
-      MSJava:
-        if not FindMSJava then
-          raise EJavaRuntimeNotFound.Create('MS Java runtime not found');
-    end;
-    DefaultRuntime := Self; // set the singleton
-    FClasspath := TClasspath.getDefault;
-    FProperties := TStringList.Create;
-    FVerifyMode := 1;
+constructor TJavaRuntime.Create(option : JvmType);
+begin
+  if DefaultRuntime <> Nil then
+    raise EJavaRuntimeCreation.Create('Can only instantiate one Java runtime per process');
+  case option of
+    SunJava1 :
+      if not FindJava11 then
+        raise EJavaRuntimeNotFound.Create('Java 1.1 runtime not found');
+     SunJava2:
+      if not FindJava12 then
+        raise EJavaRuntimeNotFOund.Create('Java 2 runtime not found');
+    MSJava:
+      if not FindMSJava then
+        raise EJavaRuntimeNotFound.Create('MS Java runtime not found');
   end;
+  DefaultRuntime := Self; // set the singleton
+  FClasspath := TClasspath.GetDefault;
+  FProperties := TStringList.Create;
+  FVerifyMode := 1;
+end;
 
-  destructor TJavaRuntime.Destroy;
-  begin
-    DefaultRuntime := Nil;
-      if (dllHandle <>0) and (instanceCount = 0) then
-        if FreeLibrary(dllHandle) then 
-          dllHandle := 0;
-    inherited Destroy;
-  end;
+destructor TJavaRuntime.Destroy;
+begin
+  DefaultRuntime := Nil;
+    if (dllHandle <>0) and (instanceCount = 0) then
+      if FreeLibrary(dllHandle) then
+        dllHandle := 0;
+  inherited Destroy;
+end;
   
-  function TJavaRuntime.FindMSJava : Boolean;
-  var
-    DLLPath : AnsiString;
+function TJavaRuntime.FindMSJava : Boolean;
+var
+  DLLPath : AnsiString;
+begin
+  result := False;
+  {$IFDEF FPC}
+  GetSystemDirectory(SystemDirBuf, MAX_PATH);
+  {$ELSE}
+  GetSystemDirectory(@SystemDirBuf, MAX_PATH);
+  {$ENDIF}
+  DLLPath := SystemDirBuf;
+  DLLPath:= DLLPath  + '\msjava.dll';
+  if FileExists(DLLPath) then
   begin
-    result := False;
-	{$IFDEF FPC}
-	GetSystemDirectory(SystemDirBuf, MAX_PATH);
-    {$ELSE}
-	 GetSystemDirectory(@SystemDirBuf, MAX_PATH);
-    {$ENDIF}
-	 DLLPath := SystemDirBuf; 
-	DLLPath:= DLLPath  + '\msjava.dll';
-    if FileExists(DLLPath) then 
-    begin
-      FJava11 := true;
-      FRuntimeLib := DLLPath;
-      FJavaHome := SystemDirBuf;
-      FMS := true;
-      result := true;
-    end;
+    FJava11 := true;
+    FRuntimeLib := DLLPath;
+    FJavaHome := SystemDirBuf;
+    FMS := true;
+    result := true;
   end;
+end;
   
-  function TJavaRuntime.FindJava12 : Boolean;
-  var
-    I : Integer;
-  begin
-    result := false; //false;
+function TJavaRuntime.FindJava12 : Boolean;
+var
+  I : Integer;
+begin
+  result := false; //false;
 
 {FRuntimeLib := FindOnSystemPath('javai.dll');
-    if FRuntimeLib <> '' then
-    begin
-      FJavaHome := ExtractFileDir(ExtractFileDir(FRuntimeLib));
-      FJava11 := false; //This is a 1.2 VM.
-      result := true; // success!
-      exit; // success!
-    end;}
+  if FRuntimeLib <> '' then
+  begin
+    FJavaHome := ExtractFileDir(ExtractFileDir(FRuntimeLib));
+    FJava11 := false; //This is a 1.2 VM.
+    result := true; // success!
+    exit; // success!
+  end;}
 
 
 //WRITELN('\Software\JavaSoft\JDK\'+ReadRegKey('\SOFTWARE\JavaSoft\JDK','CurrentVersion'));
-if CheckJavaRegistryKey('\Software\JavaSoft\Java Development Kit\' + ReadRegKey('\SOFTWARE\JavaSoft\Java Development Kit','CurrentVersion'))
-then
- begin
-  FJava11 := false; //This is a 1.2 VM.
-  result := true; // success!
-  Exit;
- end;
-
-if CheckJavaRegistryKey('\Software\JavaSoft\Java Runtime Environment\'+ReadRegKey('\SOFTWARE\JavaSoft\Java Runtime Environment','CurrentVersion'))
-then 
-begin
-  FJava11 := false; //This is a 1.2 VM.
-  result := true; // success!
-  Exit;
- end;
-
-   { for I:=Low(JRE12Keys) to High(JRE12Keys) do 
-      if (CheckJavaRegistryKey(JRE12Keys[I])) then 
-      begin
-        FJava11 := false; //This is a 1.2 VM.
-        result := true; // success!
-        Exit;
-      end;}
+  if CheckJavaRegistryKey('\Software\JavaSoft\Java Development Kit\' + ReadRegKey('\SOFTWARE\JavaSoft\Java Development Kit','CurrentVersion')) then
+  begin
+    FJava11 := false; //This is a 1.2 VM.
+    result := true; // success!
+    Exit;
   end;
+
+  if CheckJavaRegistryKey('\Software\JavaSoft\Java Runtime Environment\'+ReadRegKey('\SOFTWARE\JavaSoft\Java Runtime Environment','CurrentVersion')) then
+  begin
+    FJava11 := false; //This is a 1.2 VM.
+    result := true; // success!
+    Exit;
+  end;
+
+ { for I:=Low(JRE12Keys) to High(JRE12Keys) do
+    if (CheckJavaRegistryKey(JRE12Keys[I])) then
+    begin
+      FJava11 := false; //This is a 1.2 VM.
+      result := true; // success!
+      Exit;
+    end;}
+end;
 
 
 {heuristics to find a java 1.1 runtime.}
 
-  function TJavaRuntime.FindJava11 : Boolean;
-  var
-    I: Integer;
+function TJavaRuntime.FindJava11 : Boolean;
+var
+  I: Integer;
+begin
+  // First look on the system path.
+  FRuntimeLib := FindOnSystemPath('javai.dll');
+  if FRuntimeLib <> '' then
   begin
-    // First look on the system path.
-    FRuntimeLib := FindOnSystemPath('javai.dll');
-    if FRuntimeLib <> '' then
-    begin
-      FJavaHome := ExtractFileDir(ExtractFileDir(FRuntimeLib));
-      result := true;
-      FJava11 := true;
-      exit; // success!
-    end;
+    FJavaHome := ExtractFileDir(ExtractFileDir(FRuntimeLib));
+    result := true;
+    FJava11 := true;
+    exit; // success!
+  end;
   
-  // Failing that, search the Windows registry for location.
+// Failing that, search the Windows registry for location.
   
-    if not needsJDK then
+  if not needsJDK then
+  begin
+    for I:=Low(JRE11Keys) to High(JRE11Keys) do
     begin
-      for I:=Low(JRE11Keys) to High(JRE11Keys) do
-      begin
-        if (CheckJavaRegistryKey(JRE11Keys[I])) then
-        begin
-          result := true; // success!
-          FJava11 := true;
-          Exit;
-        end;
-      end;
-    end;
-    for I:=Low(JDK11Keys) to High(JDK11Keys) do
-    begin
-      if (CheckJavaRegistryKey(JDK11Keys[I])) then
+      if (CheckJavaRegistryKey(JRE11Keys[I])) then
       begin
         result := true; // success!
         FJava11 := true;
         Exit;
       end;
     end;
-    result := false; // failure.
   end;
-
-  {Checks the Java registry key given as an argument.
-  Returns true on success and sets the FJavaLib and FJavaHome
-  fields}
-
-  function TJavaRuntime.CheckJavaRegistryKey(key : AnsiString) : boolean;
-  var
-    reg : TRegistry;
-    S, HotspotLib : AnsiString;
+  for I:=Low(JDK11Keys) to High(JDK11Keys) do
   begin
-    result := false;
-    reg := TRegistry.Create(KEY_READ or $0100);
-    try
-      reg.RootKey := HKEY_LOCAL_MACHINE;
-      if reg.OpenKey(key, false) then
-      begin
-        if true {reg.ValueExists('RuntimeLib')} then
-          begin
-            S:= reg.ReadString('RuntimeLib');
-           // if S = '' then S := reg.ReadString('JavaHome') + '\bin\classic\jvm.dll';
+    if (CheckJavaRegistryKey(JDK11Keys[I])) then
+    begin
+      result := true; // success!
+      FJava11 := true;
+      Exit;
+    end;
+  end;
+  result := false; // failure.
+end;
+
+{Checks the Java registry key given as an argument.
+Returns true on success and sets the FJavaLib and FJavaHome
+fields}
+
+function TJavaRuntime.CheckJavaRegistryKey(key : AnsiString) : boolean;
+var
+  reg : TRegistry;
+  S, HotspotLib : AnsiString;
+begin
+  result := false;
+  reg := TRegistry.Create(KEY_READ or $0100);
+  try
+    reg.RootKey := HKEY_LOCAL_MACHINE;
+    if reg.OpenKey(key, false) then
+    begin
+      if true {reg.ValueExists('RuntimeLib')} then
+        begin
+          S:= reg.ReadString('RuntimeLib');
+         // if S = '' then S := reg.ReadString('JavaHome') + '\bin\classic\jvm.dll';
 
 if S = '' then S := reg.ReadString('JavaHome') + '\bin\server\jvm.dll';
 
-            if FileExists(S) then
+          if FileExists(S) then
+            begin
+              result := true;
+              if not UseClassicVM then
               begin
-                result := true;
-                if not UseClassicVM then 
-                begin
-                    HotspotLib := ExtractFileDir(ExtractFileDir(S)) + '\server\jvm.dll';
+                  HotspotLib := ExtractFileDir(ExtractFileDir(S)) + '\server\jvm.dll';
 //writeln(HotspotLib);
-                    if FileExists(HotspotLib) then begin
-                      S := HotspotLib;
-                      FHotspot := True;
-                    end;
+                  if FileExists(HotspotLib) then begin
+                    S := HotspotLib;
+                    FHotspot := True;
                   end;
-                FRuntimeLib := S;
-                if reg.ValueExists('JavaHome') then
-                  FJavaHome := reg.ReadString('JavaHome')
-                else
-                  FJavaHome := ExtractFileDir(ExtractFileDir(ExtractFileDir(FRuntimeLib)));
-              end;
-            Exit;
-          end
-        else begin
-          if reg.ValueExists('JavaHome') then
-            S := reg.ReadString('JavaHome')
-          else if reg.valueExists('Home') then
-              S := reg.ReadString('Home')
-          else if reg.valueExists('java_home') then
-              S := reg.ReadString('java_home')
-          else
-            Exit; // failure!
-        end;
-      end
-      else
-        Exit;
-
-     // Now check that it's really there.
-      if S[length(S)] = Chr(92) then
-        S := Copy(S, 1, length(S)-1);
-    
-      if FileExists(S + '\bin\server\jvm.dll') then
-      begin
-        FRuntimeLib := S + '\bin\server\jvm.dll'; // Success!
-          //writeln(fruntimelib);
-        FJavaHome := S;
-        result := true;
+                end;
+              FRuntimeLib := S;
+              if reg.ValueExists('JavaHome') then
+                FJavaHome := reg.ReadString('JavaHome')
+              else
+                FJavaHome := ExtractFileDir(ExtractFileDir(ExtractFileDir(FRuntimeLib)));
+            end;
+          Exit;
+        end
+      else begin
+        if reg.ValueExists('JavaHome') then
+          S := reg.ReadString('JavaHome')
+        else if reg.valueExists('Home') then
+            S := reg.ReadString('Home')
+        else if reg.valueExists('java_home') then
+            S := reg.ReadString('java_home')
+        else
+          Exit; // failure!
       end;
-    finally           
-      Reg.Free;
-    end;
-  end;
+    end
+    else
+      Exit;
 
-  procedure TJavaRuntime.SetNativeStackSize(Size : Integer);
-  begin
-    if Size > 0 then
-       FNativeStackSize := Size;
-  end;
-
-
-  procedure TJavaRuntime.SetJavaStackSize(Size : Integer);
-  begin
-    if Size > 0 then 
-       FJavaStackSize := Size;
-  end;
-  
-  procedure TJavaRuntime.setMinHeapSize(Size : Integer);
-  begin
-    if Size  > 0 then 
-       FMinHeapSize := Size;
-  end;
-  
-  procedure TJavaRuntime.setMaxHeapSize(Size : Integer);
-  begin
-    if Size  > 0 then 
-       FMaxHeapSize := Size;
-  end;
-  
-  procedure TJavaRuntime.setVerifyMode(Arg : Integer);
-  begin
-    FVerifyMode := Arg;
-  end;
-  
-  procedure TJavaRuntime.SetCheckSource(arg : Integer);
-  begin
-    FCheckSource := arg;
-  end;
-  
-  procedure TJavaRuntime.SetEnableClassGC(B : Boolean);
-  begin
-    FEnableClassGC := Integer(B); 
-  end;
-  
-  procedure TJavaRuntime.setVerboseGC(B:Boolean);
-  begin
-    FVerboseGC := Integer(B);
-  end;
-  
-  procedure TJavaRuntime.SetDisableAsyncGC(B: Boolean);
-  begin
-    FDisableAsyncGC := Integer(B);
-  end;
-  
-  procedure TJavaRuntime.setVerbose(B : Boolean);
-  begin
-    FVerbose := Integer(B);
-  end;
-  
-  procedure TJavaRuntime.setDebugPort(Port : Integer);
-  begin
-    FDebugPort := Port;
-  end;
-  
-  procedure TJavaRuntime.setDebugging(Arg : Integer);
-  begin
-  end;
-  
-  procedure TJavaRuntime.setAbortProc(proc : TAbortProc);
-  begin
-    FAbortproc := proc;
-  end;
-  
-  procedure TJavaRuntime.setExitProc(proc : TExitProc);
-  begin
-    FExitProc := Proc;
-  end;
-  
-  procedure TJavaRuntime.setPrintf(printproc : TPrintf);
-  begin
-    fprintf := printproc;
-  end;
-  
-  function TJavaRuntime.sanityCheck(classname, filename : AnsiString) : AnsiString;
-  begin
-    result := FClasspath.sanityCheck(classname, filename);
-  end;
-  
-  function TJavaRuntime.sanityCheckSource(filename : AnsiString) : AnsiString;
-  begin
-    result := FClasspath.sanityCheckSource(filename);
-  end;
-  
-  procedure TJavaRuntime.addProperty(S: AnsiString);
-  begin
-    FProperties.add(S);
-  end;
-
-  procedure addAllArchives(C : TClasspath; directory, pattern : AnsiString);
-  begin
-    if FindFirst(Directory + pattern, faAnyFile, searchrec) = 0 then
-    begin
-      cpath.addDir(Directory + searchrec.Name);
-      while FindNext(searchrec) = 0 do 
-        cpath.addDir(Directory + searchrec.Name);
-    end;
-    FindClose(searchrec);
-  end;
-
-  
-  class function TClasspath.getDefault : TClassPath;
-  var
-    Home, libjars, ThirdPartyDir : AnsiString;
-    Runtime : TJavaRuntime;
-    SearchRec : TSearchRec;
-  begin
-    if cpath = Nil then
-    begin
-      cpath := TClasspath.Create;
-      Runtime := TJavaRuntime.GetDefault;
-      Home := Runtime.JavaHome;
-
-
-      if FileExists(Home + '\classes') then cpath.addDir(Home + '\classes');
-
-      // Now see if there are any other jars or zips in there and add them.
-
-      Libjars := Home + '\lib\*.jar';
-      addAllArchives(cpath, Home + '\lib\ext\', '*.jar');
-      addAllArchives(cpath, Home + '\lib\ext\', '*.zip');
-      addAllArchives(cpath, Home + '\lib\', '*.jar');
-      addAllArchives(cpath, Home + '\lib\', '*.zip');
-//          if BaseClassPath = '' then
-//             BaseClassPath := GetEnvironmentString('CLASSPATH');
-
-      ThirdPartyDir := GetEnvironmentString('JARS_DIR');
-      if ThirdPartyDir = '' then ThirdPartyDir := '.';
-      if ThirdPartyDir[Length(ThirdPartyDir)] <> '\' then
-        ThirdPartyDir := ThirdPartyDir + '\';
-
-      if FindFirst(ThirdPartyDir + '*.jar', 0, searchRec) = 0 then
-      repeat
-        cpath.AddDir(ThirdPartyDir + searchRec.name);
-      until FindNext(SearchRec) <> 0;
-
-      cpath.addPath(GetEnvironmentString('CLASSPATH'));
-      cpath.addPath(AppClassPath);
-      cpath.addPath(BasePath);
-      cpath.addDir(getCurrentDir); // Maybe better off without this.
-    end;
-    result := cpath;
-  end;
-
-
-  class function TClasspath.getBootPath : TClassPath;
-  var
-    Home, ThirdPartyDir : AnsiString;
-    SearchRec : TSearchRec;
-  begin
-    if bootpath = Nil then
-    begin
-      bootpath := TClasspath.Create;
-      Home := TJavaRuntime.GetDefault.JavaHome;
-      if FileExists(Home + '\classes') then 
-        cpath.addDir(Home + '\classes');
-
-      // Now see if there are any other jars or zips in there and add them.
-
-      addAllArchives(cpath, Home + '\lib\ext\', '*.jar');
-      addAllArchives(cpath, Home + '\lib\ext\', '*.zip');
-      addAllArchives(cpath, Home + '\lib\', '*.jar');
-      addAllArchives(cpath, Home + '\lib\', '*.zip');
-//          if BaseClassPath = '' then
-//             BaseClassPath := GetEnvironmentString('CLASSPATH');
-
-      ThirdPartyDir := GetEnvironmentString('JARS_DIR');
-      if ThirdPartyDir = '' then ThirdPartyDir := '.';
-      if ThirdPartyDir[Length(ThirdPartyDir)] <> '\' then
-        ThirdPartyDir := ThirdPartyDir + '\';
-
-      if FindFirst(ThirdPartyDir + '*.jar', 0, searchRec) = 0 then
-      repeat
-        cpath.AddDir(ThirdPartyDir + searchRec.name);
-      until FindNext(SearchRec) <> 0;
-
-      cpath.addPath(GetEnvironmentString('CLASSPATH'));
-      cpath.addPath(AppClassPath);
-      cpath.addPath(BasePath);
-      cpath.addDir(getCurrentDir); // Maybe better off without this.
-    end;
-    result := cpath;
-  end;
-
-  constructor TClasspath.Create;
-  begin
-  end;
-
-
-  procedure TClasspath.addPath(Path : AnsiString);
-  var
-    Len: Integer;
-    Dirs  : TStringList;
-    I : Integer;
-  begin
-    Dirs  := TStringList.Create;
-    repeat
-      Len := AnsiPos(';', Path);
-      if Len > 1 then 
-        Dirs.add(Copy(Path, 1, Len-1));
-      Path := Copy(Path, Len +1, Length(Path));
-    until Len=0;
-    if length(Path)>0 then 
-      Dirs.add(Path);
-    for I := Dirs.Count downto 1 do
-      addDir(Dirs[I-1]);
-    Dirs.Free;
-  end;
-  
-  procedure TClasspath.addDir(dir : AnsiString);
-  var
-    S: AnsiString;
-    I : Integer;
-  begin
-    S := ExpandFileName(dir);
-    if (S[length(S)] ='\') and (S[length(S)-1] <> ':') then 
+   // Now check that it's really there.
+    if S[length(S)] = Chr(92) then
       S := Copy(S, 1, length(S)-1);
-    I := IndexOf(S);
-    if I>=0 then
-      Delete(I);
-    add(S);
-  end;
-  
-  
-  function TClasspath.FullPath : AnsiString;
-  var
-    I: Integer;
-  begin
-    result := '';
-    for I:=Count downto 1 do
+    
+    if FileExists(S + '\bin\server\jvm.dll') then
     begin
-      if I < Count then 
-        result := result + ';';
-      result := result + Strings[I-1];
+      FRuntimeLib := S + '\bin\server\jvm.dll'; // Success!
+        //writeln(fruntimelib);
+      FJavaHome := S;
+      result := true;
     end;
+  finally
+    Reg.Free;
   end;
+end;
+
+procedure TJavaRuntime.SetNativeStackSize(Size : Integer);
+begin
+  if Size > 0 then
+     FNativeStackSize := Size;
+end;
+
+procedure TJavaRuntime.SetJavaStackSize(Size : Integer);
+begin
+  if Size > 0 then
+     FJavaStackSize := Size;
+end;
+  
+procedure TJavaRuntime.SetMinHeapSize(Size : Integer);
+begin
+  if Size  > 0 then
+     FMinHeapSize := Size;
+end;
+  
+procedure TJavaRuntime.SetMaxHeapSize(Size : Integer);
+begin
+  if Size  > 0 then
+     FMaxHeapSize := Size;
+end;
+  
+procedure TJavaRuntime.SetVerifyMode(Arg : Integer);
+begin
+  FVerifyMode := Arg;
+end;
+  
+procedure TJavaRuntime.SetCheckSource(arg : Integer);
+begin
+  FCheckSource := arg;
+end;
+  
+procedure TJavaRuntime.SetEnableClassGC(B : Boolean);
+begin
+  FEnableClassGC := Integer(B);
+end;
+  
+procedure TJavaRuntime.SetVerboseGC(B:Boolean);
+begin
+  FVerboseGC := Integer(B);
+end;
+  
+procedure TJavaRuntime.SetDisableAsyncGC(B: Boolean);
+begin
+  FDisableAsyncGC := Integer(B);
+end;
+  
+procedure TJavaRuntime.SetVerbose(B : Boolean);
+begin
+  FVerbose := Integer(B);
+end;
+  
+procedure TJavaRuntime.SetDebugPort(Port : Integer);
+begin
+  FDebugPort := Port;
+end;
+  
+procedure TJavaRuntime.SetDebugging(Arg : Integer);
+begin
+end;
+  
+procedure TJavaRuntime.SetAbortProc(proc : TAbortProc);
+begin
+  FAbortproc := proc;
+end;
+  
+procedure TJavaRuntime.SetExitProc(proc : TExitProc);
+begin
+  FExitProc := Proc;
+end;
+  
+procedure TJavaRuntime.SetPrintf(printproc : TPrintf);
+begin
+  fprintf := printproc;
+end;
+  
+function TJavaRuntime.SanityCheck(classname, filename : AnsiString) : AnsiString;
+begin
+  result := FClasspath.SanityCheck(classname, filename);
+end;
+  
+function TJavaRuntime.SanityCheckSource(filename : AnsiString) : AnsiString;
+begin
+  result := FClasspath.sanityCheckSource(filename);
+end;
+  
+procedure TJavaRuntime.AddProperty(S: AnsiString);
+begin
+  FProperties.Add(S);
+end;
+
+procedure AddAllArchives(C : TClasspath; directory, pattern : AnsiString);
+begin
+  if FindFirst(Directory + pattern, faAnyFile, searchrec) = 0 then
+  begin
+    cpath.AddDir(Directory + searchrec.Name);
+    while FindNext(searchrec) = 0 do
+      cpath.AddDir(Directory + searchrec.Name);
+  end;
+  FindClose(searchrec);
+end;
+
+  
+class function TClasspath.GetDefault : TClassPath;
+var
+  Home, libjars, ThirdPartyDir : AnsiString;
+  Runtime : TJavaRuntime;
+  SearchRec : TSearchRec;
+begin
+  if cpath = Nil then
+  begin
+    cpath := TClasspath.Create;
+    Runtime := TJavaRuntime.GetDefault;
+    Home := Runtime.JavaHome;
+
+
+    if FileExists(Home + '\classes') then cpath.AddDir(Home + '\classes');
+
+    // Now see if there are any other jars or zips in there and add them.
+
+    Libjars := Home + '\lib\*.jar';
+    AddAllArchives(cpath, Home + '\lib\ext\', '*.jar');
+    AddAllArchives(cpath, Home + '\lib\ext\', '*.zip');
+    AddAllArchives(cpath, Home + '\lib\', '*.jar');
+    AddAllArchives(cpath, Home + '\lib\', '*.zip');
+//          if BaseClassPath = '' then
+//             BaseClassPath := GetEnvironmentString('CLASSPATH');
+
+    ThirdPartyDir := GetEnvironmentString('JARS_DIR');
+    if ThirdPartyDir = '' then ThirdPartyDir := '.';
+    if ThirdPartyDir[Length(ThirdPartyDir)] <> '\' then
+      ThirdPartyDir := ThirdPartyDir + '\';
+
+    if FindFirst(ThirdPartyDir + '*.jar', 0, searchRec) = 0 then
+    repeat
+      cpath.AddDir(ThirdPartyDir + searchRec.name);
+    until FindNext(SearchRec) <> 0;
+
+    cpath.AddPath(GetEnvironmentString('CLASSPATH'));
+    cpath.AddPath(AppClassPath);
+    cpath.AddPath(BasePath);
+    cpath.AddDir(getCurrentDir); // Maybe better off without this.
+  end;
+  result := cpath;
+end;
+
+
+class function TClasspath.GetBootPath : TClassPath;
+var
+  Home, ThirdPartyDir : AnsiString;
+  SearchRec : TSearchRec;
+begin
+  if bootpath = Nil then
+  begin
+    bootpath := TClasspath.Create;
+    Home := TJavaRuntime.GetDefault.JavaHome;
+    if FileExists(Home + '\classes') then
+      cpath.AddDir(Home + '\classes');
+
+    // Now see if there are any other jars or zips in there and add them.
+
+    AddAllArchives(cpath, Home + '\lib\ext\', '*.jar');
+    AddAllArchives(cpath, Home + '\lib\ext\', '*.zip');
+    AddAllArchives(cpath, Home + '\lib\', '*.jar');
+    AddAllArchives(cpath, Home + '\lib\', '*.zip');
+//          if BaseClassPath = '' then
+//             BaseClassPath := GetEnvironmentString('CLASSPATH');
+
+    ThirdPartyDir := GetEnvironmentString('JARS_DIR');
+    if ThirdPartyDir = '' then ThirdPartyDir := '.';
+    if ThirdPartyDir[Length(ThirdPartyDir)] <> '\' then
+      ThirdPartyDir := ThirdPartyDir + '\';
+
+    if FindFirst(ThirdPartyDir + '*.jar', 0, searchRec) = 0 then
+    repeat
+      cpath.AddDir(ThirdPartyDir + searchRec.name);
+    until FindNext(SearchRec) <> 0;
+
+    cpath.AddPath(GetEnvironmentString('CLASSPATH'));
+    cpath.AddPath(AppClassPath);
+    cpath.AddPath(BasePath);
+    cpath.AddDir(getCurrentDir); // Maybe better off without this.
+  end;
+  result := cpath;
+end;
+
+constructor TClasspath.Create;
+begin
+end;
+
+
+procedure TClasspath.AddPath(Path : AnsiString);
+var
+  Len: Integer;
+  Dirs  : TStringList;
+  I : Integer;
+begin
+  Dirs  := TStringList.Create;
+  repeat
+    Len := AnsiPos(';', Path);
+    if Len > 1 then
+      Dirs.add(Copy(Path, 1, Len - 1));
+    Path := Copy(Path, Len + 1, Length(Path));
+  until Len=0;
+  if length(Path)>0 then
+    Dirs.add(Path);
+  for I := Dirs.Count downto 1 do
+    AddDir(Dirs[I - 1]);
+  Dirs.Free;
+end;
+  
+procedure TClasspath.AddDir(dir : AnsiString);
+var
+  S: AnsiString;
+  I : Integer;
+begin
+  S := ExpandFileName(dir);
+  if (S[length(S)] = '\') and (S[length(S) - 1] <> ':') then
+    S := Copy(S, 1, length(S) - 1);
+  I := IndexOf(S);
+  if I >= 0 then
+    Delete(I);
+  add(S);
+end;
+  
+
+function TClasspath.FullPath : AnsiString;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := Count downto 1 do
+  begin
+    if I < Count then
+      Result := Result + ';';
+    Result := Result + Strings[I - 1];
+  end;
+end;
 
 
 // Sets the part of the classpath that is specific to the app.
   
-  class procedure TJavaRuntime.setAppClassPath(path : AnsiString);
-  begin
-    AppClassPath := path;
-  end;
+class procedure TJavaRuntime.SetAppClassPath(path : AnsiString);
+begin
+  AppClassPath := path;
+end;
 
-  procedure addAllFilesToPath(Directory, Pattern : AnsiString; var Path : AnsiString);
+procedure addAllFilesToPath(Directory, Pattern : AnsiString; var Path : AnsiString);
+begin
+  if FindFirst(Directory + pattern, faAnyFile, searchrec) = 0 then
   begin
-    if FindFirst(Directory + pattern, faAnyFile, searchrec) = 0 then
-    begin
+    Path := Path + ';' + Directory + searchrec.Name;
+    while FindNext(searchrec) = 0 do
       Path := Path + ';' + Directory + searchrec.Name;
-      while FindNext(searchrec) = 0 do 
-        Path := Path + ';' + Directory + searchrec.Name;
-    end;
-      FindClose(searchrec);
   end;
+    FindClose(searchrec);
+end;
 
-  class procedure TJavaRuntime.setBasePath(Path : AnsiString);
-  var
-    Dir : AnsiString;
-  begin
-    BasePath := ExpandFileName(Path);
-    Dir := ExtractFilePath(ExpandFileName(BasePath));
-    addAllFilesToPath(Dir, '*.zip', BasePath);
-    AddAllFilesToPath(Dir, '*.jar', BasePath);
-    addAllFilesToPath(Dir + 'lib\', '*.zip', BasePath);
-    AddAllFilesToPath(Dir + 'lib\', '*.jar', BasePath);
-    addAllFilesToPath(Dir + 'libs\', '*.zip', BasePath);
-    AddAllFilesToPath(Dir + 'libs\', '*.jar', BasePath);
+class procedure TJavaRuntime.SetBasePath(Path : AnsiString);
+var
+  Dir : AnsiString;
+begin
+  BasePath := ExpandFileName(Path);
+  Dir := ExtractFilePath(ExpandFileName(BasePath));
+  addAllFilesToPath(Dir, '*.zip', BasePath);
+  AddAllFilesToPath(Dir, '*.jar', BasePath);
+  addAllFilesToPath(Dir + 'lib\', '*.zip', BasePath);
+  AddAllFilesToPath(Dir + 'lib\', '*.jar', BasePath);
+  addAllFilesToPath(Dir + 'libs\', '*.zip', BasePath);
+  AddAllFilesToPath(Dir + 'libs\', '*.jar', BasePath);
 {
-    addAllFilesToPath(Dir + '..\lib\', '*.zip', BasePath);
-    AddAllFilesToPath(Dir + '..\lib\', '*.jar', BasePath);
-    addAllFilesToPath(Dir + '..\libs\', '*.zip', BasePath);
-    AddAllFilesToPath(Dir + '..\libs\', '*.jar', BasePath);
+  addAllFilesToPath(Dir + '..\lib\', '*.zip', BasePath);
+  AddAllFilesToPath(Dir + '..\lib\', '*.jar', BasePath);
+  addAllFilesToPath(Dir + '..\libs\', '*.zip', BasePath);
+  AddAllFilesToPath(Dir + '..\libs\', '*.jar', BasePath);
 }      
-    if CPath <> Nil then
-      CPath.AddPath(BasePath);
-  end;
+  if CPath <> Nil then
+    CPath.AddPath(BasePath);
+end;
 
-  function TClassPath.sanityCheck(classname, filename : AnsiString) : AnsiString;
-  var
-    fullFile, pathName, package, basePath, temp : AnsiString;
-    I : Integer;
-    Oops : Boolean;
+function TClassPath.SanityCheck(classname, filename : AnsiString) : AnsiString;
+var
+  fullFile, pathName, package, basePath, temp : AnsiString;
+  I : Integer;
+  Oops : Boolean;
+begin
+  fullFile := ExpandFileName(filename);
+  pathName := ExtractFileDir(fullfile);
+  temp := toBackSlash(classname); // temp is string where the / is now \.
+  for I := length(temp) downto 1 do
   begin
-    fullFile := ExpandFileName(filename);
-    pathName := ExtractFileDir(fullfile);
-    temp := toBackSlash(classname); // temp is string where the / is now \.
-    for I := length(temp) downto 1 do
-    begin
-      if temp[I] = '\' then break;
-    end;
-    if I =0 then // no slashes, anonymous package
-    begin
-      addDir(pathName); // put the filename's path on the classpath
-	  {$IFDEF FPC}
-       setCurrentDirectory(PChar(pathName));
-      {$ELSE}
-	    setCurrentDirectory(PChar(pathName));
-      {$ENDIF} 
+    if temp[I] = '\' then break;
+  end;
+  if I = 0 then // no slashes, anonymous package
+  begin
+    AddDir(pathName); // put the filename's path on the classpath
+  {$IFDEF FPC}
+     setCurrentDirectory(PChar(pathName));
+    {$ELSE}
+    setCurrentDirectory(PChar(pathName));
+    {$ENDIF}
      
-      Exit;
-    end;
-    package := Copy(temp, 1, I-1);
-    Oops := Length(Package) > Length(PathName) - 3;
-    if not Oops then
-    begin
-      Temp := Copy(PathName, 1+Length(PathName) - Length(Package), Length(Package));
-      Oops := (LowerCase(Temp) <> LowerCase(Package));
-    end;
-    if Oops then // There is a problem.
-      raise EClasspathException.Create('File ' + fullFile + ' should be on relative path ' +package);
-    basePath := Copy(pathName, 1, length(PathName) - Length(Temp));
-    addDir(basePath);
-    result := BasePath;
+    Exit;
   end;
-  
-  function TClasspath.SanityCheckSource(filename : AnsiString) : AnsiString;
-  var
-    Package, Classname : AnsiString;
+  package := Copy(temp, 1, I - 1);
+  Oops := Length(Package) > Length(PathName) - 3;
+  if not Oops then
   begin
-    Package := getPackageName(Filename);
-    Classname := Package + ExtractFileName(Filename);
-    ChopExtension(Classname);
-    result := SanityCheck(Classname, Filename);
+    Temp := Copy(PathName, 1 + Length(PathName) - Length(Package), Length(Package));
+    Oops := (LowerCase(Temp) <> LowerCase(Package));
   end;
+  if Oops then // There is a problem.
+    raise EClasspathException.Create('File ' + fullFile + ' should be on relative path ' +package);
+  basePath := Copy(pathName, 1, length(PathName) - Length(Temp));
+  AddDir(basePath);
+  result := BasePath;
+end;
   
-  // Get the package name inside a source file.
-  // This code is a bit messy. Maybe I'll clean it up later.
+function TClasspath.SanityCheckSource(filename : AnsiString) : AnsiString;
+var
+  Package, Classname : AnsiString;
+begin
+  Package := GetPackageName(Filename);
+  Classname := Package + ExtractFileName(Filename);
+  ChopExtension(Classname);
+  result := SanityCheck(Classname, Filename);
+end;
   
-  function getPackageName(filename : AnsiString) : AnsiString;
-  var
-    T : TextFile;
-    inComment : Boolean;
-    Line : AnsiString;
-    I : Integer;
-  begin
-   AssignFile(T, filename);
-   Reset(T);
-   inComment := false;
-   while not Eof(T) do 
+// Get the package name inside a source file.
+// This code is a bit messy. Maybe I'll clean it up later.
+  
+function GetPackageName(filename : AnsiString) : AnsiString;
+var
+  T : TextFile;
+  inComment : Boolean;
+  Line : AnsiString;
+  I : Integer;
+begin
+ AssignFile(T, filename);
+ Reset(T);
+ inComment := false;
+ while not Eof(T) do
+ begin
+   ReadLn(T, Line);
+   StripComments(Line, InComment);
+   I := AnsiPos('package', Line);
+   if I > 0 then
    begin
-     ReadLn(T, Line);
-     StripComments(Line, InComment);
-     I := AnsiPos('package', Line);
-     if I>0 then 
-     begin
-       Result := Copy(Line, I+8, length(Line));
-       I := AnsiPos(';', Result);
-       if I>0 then 
-         begin
-           Result := Trim(Copy(Result, 1, I-1));
-           break;
-         end;
-       if AnsiPos('{', Line)>0 then 
+     Result := Copy(Line, I + 8, length(Line));
+     I := AnsiPos(';', Result);
+     if I > 0 then
+       begin
+         Result := Trim(Copy(Result, 1, I - 1));
          break;
-     end;
+       end;
+     if AnsiPos('{', Line) > 0 then
+       break;
    end;
-   CloseFile(T);
-   if length(Result) > 0 then Result := Result + '.';
-  end;
+ end;
+ CloseFile(T);
+ if length(Result) > 0 then Result := Result + '.';
+end;
   
-  procedure StripComments(var Line : AnsiString; var InComment : Boolean);
-  var
-    S : AnsiString;
-    I : Integer;
+procedure StripComments(var Line : AnsiString; var InComment : Boolean);
+var
+  S : AnsiString;
+  I : Integer;
+begin
+  S := '';
+  if InComment then
   begin
-    S := '';
-    if InComment then 
-    begin
-      I := AnsiPos('*/', Line);
-      if I>0 then 
-        begin
-          Line := Copy(Line, 2+I, length(Line));
-          InComment := False;
-          StripComments(Line, InComment);
-        end
-      else 
-        Line := '';
-    end
-    else begin
-      I := AnsiPos('/*', Line);
-      if I>0 then 
-        begin
-          InComment := True;
-          S := Copy(Line, 1, I-1);
-          Line := Copy(Line, I+2, Length(Line));
-          StripComments(Line, InComment);
-        end;
-      Line := S + Line;
-    end;
-    I := AnsiPos('//', Line);
-    if I>0 then 
-      Line := Copy(Line, 1, I-1);
+    I := AnsiPos('*/', Line);
+    if I>0 then
+      begin
+        Line := Copy(Line, 2 + I, length(Line));
+        InComment := False;
+        StripComments(Line, InComment);
+      end
+    else
+      Line := '';
+  end
+  else begin
+    I := AnsiPos('/*', Line);
+    if I > 0 then
+      begin
+        InComment := True;
+        S := Copy(Line, 1, I - 1);
+        Line := Copy(Line, I + 2, Length(Line));
+        StripComments(Line, InComment);
+      end;
+    Line := S + Line;
   end;
+  I := AnsiPos('//', Line);
+  if I > 0 then
+    Line := Copy(Line, 1, I - 1);
+end;
 end.
 
 {$R+}
