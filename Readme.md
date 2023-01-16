@@ -1,4 +1,4 @@
-﻿JNI Wrapper for Delphi and FreePascal
+# JNI Wrapper for Delphi and FreePascal
 
     Contents of Archive
     Notes on Use
@@ -22,8 +22,8 @@ This JNI Wrapper for Delphi and FreePascal provides a powerful and simplified ob
 
 I Amine Moulay Ramdane have noticed that JNIWrapper for Delphi and FreePascal was not supporting returning of Strings and Arrays types from Java, so i have implemented that and i have now enhanced JNI Wrapper to be very powerful , so it's now supporting all the necessary functions and methods and and much more... hope you will happy with it cause i have worked hard to bring this new 2.94 to you, it is really now a professional software of a good quality. 
 
-Also i Amine Moulay Ramdane have enhanced more JNI Wrapper and ported it to 64 bit and to both FreePascal and the Delphi XE versions sanmd to Delphi Tokyo, here is the functions that i have implemented and added:
-
+Also i Amine Moulay Ramdane have enhanced the JNI Wrapper more and ported it to 64 bit and to both FreePascal and the Delphi XE versions sanmd to Delphi Tokyo, here is the functions that i have implemented and added:
+```Pascal
 function JstringArrayToDTStrings(jarr : JArray) : TStrings;
 
 function JdoubleArrayToDdoubleArray(jarr : JdoubleArray) : TDdoubleArray;
@@ -37,12 +37,12 @@ function JbyteArrayToDshortintArray(jarr : JByteArray) : TDshortintArray;
 function JshortArrayToDsmallintArray(jarr : JShortArray) : TDsmallintArray;
 
 function JbooleanArrayToDbooleanArray(jarr : JBooleanArray) : TDbooleanArray; 
-
+```
 And don't forget to call TJavaVM.freeRef() method from Delphi or FreePascal when you need to garbage collect and free the memory that was allocated. 
 
 Read the rest:
 
-Design Goal:
+## Design Goal:
 
 To provide a simplified object-oriented API for doing mixed language programming in Java and Delphi (Borland Object Pascal language) or FreePascal. This may provide an easier and more productive way of getting Win32 and Win64 features in Java projects and integrating legacy code (at least for the Delphi or FreePascal community).
 General Description:
@@ -119,7 +119,7 @@ Partial wish list:
     * Better documentation.
 
 (Write me to add to this wishlist.)
-License:
+## License:
 
 Open source. The library may be incorporated into your products as long as you specify in your banner (console mode) and/or about box (GUI mode) that you make use of this product and provide the URL where the user may obtain the latest version. That URL is currently:
 
