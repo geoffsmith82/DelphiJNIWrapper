@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>JNI Wrapper for Delphi</title>
+
+
+
+
+
+
+
+
+
+<style>
+<!--
+BODY {
+        background : #FFFFCC;
+        font-family : Verdana, Sans-Serif;
+        margin-left : 0.25in
+}
+P {
+        margin-left : 0.5in;
+        margin-right: 1in
+}
+
+UL {
+        margin-left : 0.5in;
+        margin-right: 1.5in;
+}
+
+H1,H2 {
+        font-family : Trebuchet, Serif;
+}
+-->
+
+</style></head><body>
+<h1>JNI Wrapper for Delphi and FreePascal</h1>
+<blockquote>
+<a href="#Contents">Contents of Archive</a>
+<br><a href="#Use">Notes on Use</a>
+<br><a href="#License">Licensing Terms</a>
+</blockquote>
+
+<h2>Version: </h2><p>2.94</p>
+
+<h2>Date: </h2>
+<p>April 22, 2019<br></p><h2>Author:</h2> 
+
+<p>Jonathan Revusky (Lead programmer), <a href="mailto:jon@revusky.com">jon@revusky.com</a></p>
+<p>Salvatore Meschini (Maintainer), <a href="mailto:salvatoremeschini@interfree.it">salvatoremeschini@interfree.it</a></p>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp;Amine Moulay Ramdane has enhanced more JNI
+Wrapper and ported it to 64 bit and to all the Delphi versions and
+to FreePascal<span style="text-decoration: underline;">,</span><a href="mailto:salvatoremeschini@interfree.it">aminer68@gmail.com</a><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<h2>Design Goal: </h2>
+
+<p>
+To provide a simplified object-oriented API for doing mixed 
+language programming in Java and Delphi (Borland Object Pascal language) or FreePascal. 
+This may provide an easier and more productive way of getting Win32 and Win64 
+features in Java projects and integrating legacy code (at least for the 
+Delphi or FreePascal community). 
+</p>
+
+<h2>General Description: </h2>
+
+<p>  The accompanying files contain source code that makes it easy to
+implement mixed language projects with Java and Delphi. JNI.pas is a
+straight translation of the jni.h header file distributed with Sun's JDK.
+This can be used on its own with no restriction except those applying 
+to the use of the Sun JDK (not to be used flying aircraft or
+operating nuclear facilities and whatnot.)</p>
+
+
+<p>The files JNIWrapper.pas and JavaRuntime.pas contain the source code to
+wrapper classes I have written to provide a much easier object-oriented
+interface to the Java Native Interface (JNI). These classes include the following:</p>
+
+<ul>
+<li><code>TJavaRuntime</code> is an encapsulation of the JNI Invocation API. In most cases,
+you will get an instance of this class by calling the class method <code>GetDefault</code>.<br></li>
+
+<li><code>TJavaParams</code> is an encapsulation of the list of parameters passed to a
+Java method.<br></li>
+
+<li><code>TJavaObject</code> is an encapsulation of a Java object.<br></li>
+
+<li><code>TJavaClass</code> is an encapsulation of a Java class.<br></li>
+
+<li><code>TJavaMethod</code> is an encapsulation of a Java method.<br><br></li>
+</ul>
+
+<p>Use of the above classes is demonstrated in the various .dpr and .java
+files that are included.</p>
+
+<a name="Use"><h2>Notes on Use of the JNI wrapper methods:</h2></a>
+  
+  <p>Usage should be fairly intuitive, particularly from study of the
+included examples.</p>
+
+<p>In this version, there is a pretty sophisticated wrapper around the invocation
+API. Typically, you instantiate a <code>TJavaRuntime</code> instance by calling the static
+method <code>GetDefault</code>, which will look for a Java runtime on your system. By default,
+it starts off looking for a Oracle Java JVM, and failing that, looks for a Sun 1.1 VM,
+and if it can't find that, looks for the MS VM. (Note that the latter will only
+work with the most recent JVM from Microsoft, the one that supports JNI.) You can
+give it hints by calling the methods 
+<code>SetPrefersMS</code> and <code>SetJava11</code> before calling
+<code>GetDefault</code>. If you do that, you change the 
+order in which the method searches.</p>
+
+<p>You can also specify directly which VM you want to instantiate by calling:</p>
+
+<p><code>TJavaRuntime.Create(&lt;choice&gt;)</code> where the choice can be one of:</p>
+
+<center><code>SunJava11, SunJava2, or MSJava.</code></center>
+
+<p>This method will raise an exception if:</p>
+<ul>
+<li>
+You have already instantiated a JavaRuntime instance (you can only create one.)
+<br><br></li>
+<li>
+The JVM you specified cannot be found on the system.
+</li>
+</ul>
+
+<p>The various run-time JVM options can be set via the properties 
+<code>MaxHeapSize, MinHeapSize, Verbose</code>, etc.  of the class 
+<code>TJavaRuntime</code>.  Note that these properties are effectively 
+read-only after the VM is actually instantiated.</p> 
+
+<h2>Notes on calling Delphi or FreePascal methods from Java:</h2>
+
+<p>An example is provided of calling a Delphi or FreePascal DLL from Java. Note that in
+order to use the JNI wrapper methods, you must first call:</p>
+
+<center><code>TJavaVM.setThreadPenv(penv);</code></center>
+
+<p>at the top of your native method.</p>
+
+<p>The other big gotcha in terms of calling a native Delphi or FreePascal DLL from Java involves threading issues. 
+Delphi or FreePascal variables that are to be used in multiple threads should be declared in a
+<code>threadvar</code> section. Java objects wrappers that are to be used from multiple 
+threads should be promoted to global references. This amounts to setting:</p>
+ 
+ <center><code>JavaObject.Global := true;</code></center>
+ 
+<p> with a <code>TJavaObject</code> (or <code>TJavaClass</code>) instance.</p>
+
+<h2>Direct Use of JNI.pas:</h2>
+
+<p>I anticipate that most people will prefer to call Java methods using
+the wrapper classes in JNIWrapper.pas and JavaRuntime.pas. However, not all of
+the JNI functionality is currently wrapped, so you may have to use JNI.pas directly.
+If you do that, the source in JNIWrapper.pas provides a fairly involved model of
+how to do so. Note that there is significant redundancy in the function pointers
+which are provided by the JNI. Most calls have three forms of parameter
+list that you can use, <code>CallXXXMethod(), CallXXXMethodV()</code>, and <code>CallXXXMethodA()</code>.
+The first form uses a C-style variable length parameter list. As far as I know,
+this has no Object Pascal equivalent. I have mostly opted to use the CallXXXMethodV calls,
+which basically work by passing a totally raw pointer to the list of arguments.</p>
+
+<p> That is indeed about as ugly as it gets. However, the <code>TJavaParams</code> wrapper
+class is designed to shelter you from this ugliness. This class (in
+conjunction with <code>TJavaMethod</code>) also protects you from having to supply
+the Java method signature to obtain a reference to a Java method.</p>
+
+<a name="Contents"><h2>Contents of archive:</h2></a>
+
+<ul>
+<li>
+<b>JNI.pas</b>      --     translation of the jni.h file in the Sun JDK to Pascal.
+<br><br></li>
+<li>
+<b>JNIWrapper.pas</b> --   delphi source code containing object pascal class
+                  wrappers for JNI handles.
+<br><br></li>
+<li><b>JavaRuntime.pas</b> --   delphi source code containing object pascal class
+                  TJavaRuntime that provides an easy-to-use wrapper around the JNI invocation API.
+<br><br></li>
+<li>
+
+<b>JUtils.pas</b> --    Source of various routines used here and there.
+<br><br></li>
+<li>
+
+<b>JTest*.dpr</b> --       These files contain delphi source of demos that show how to use the 
+                        JNIWrapper.pas code in your programs.
+<br><br></li>                                                                                                                         
+<li>
+<b>HelloWorld.java</b> --  the source to a Java program that is used in JTest demos.
+<br><br></li>
+<li>
+
+<b>native.dpr</b> --       Source for a trivial DLL written in Delphi to demonstrate
+                  a native call to delphi from Java. The Java part of this demo is in the file
+                  <b>NativeExample.java</b>
+<br><br></li>
+<li>
+
+<b>Bothways.dpr</b> --     This provides an example in which Delphi code calls
+                  Java code and then viceversa!
+<br><br></li>
+
+<li>
+<b>build.bat</b>    --     A command-line batch file which compiles
+                  all the included source files. It is assumed that you have
+                  the Delphi command line compiler DCC32.exe and the default
+                  Java command-line compiler javac.exe on your system path.
+                  Note: This code compiles with Delphi 4. I haven't
+                  tried it with any later version. Please tell me if there
+                  is a problem.
+
+<br><br></li>
+</ul>
+
+<h2>Partial wish list: </h2>
+
+<ul>
+<li>
+A delphi version of the javah tool that provides the 
+stubs for java native methods. 
+<br><br></li>
+<li>Better documentation. <br><br></li>
+</ul>
+<p>(<a href="mailto:jon@revusky.com">Write me</a> to add to 
+this wishlist.)
+
+
+<a name="License"><h2>License:</h2></a>
+ 
+ </p><p>Open source. The library may be incorporated into your products 
+as long as you specify in your banner (console mode) and/or about box 
+(GUI mode) that you make use of this product and provide the URL where 
+the user may obtain the latest version. That URL is currently: </p>
+<p><b><a href="http://www.revusky.com/">
+http://www.revusky.com/</a> </b></p>
+
+<p>Redistribution of this product in source form must include this readme file.</p>
+
+<p>Have fun!</p>
+
+<p>Jonathan Revusky, 1 May 2001</p>
+
+</body></html>
