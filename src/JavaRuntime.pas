@@ -266,239 +266,239 @@ end;
 
   procedure StripComments(var Line : AnsiString; var InComment : Boolean); forward;
   
-  procedure TJavaRuntime.Initialize;
+procedure TJavaRuntime.Initialize;
+begin
+  if DLLHandle <> 0 then
+    exit; // already initialized.
+
+  {$IFDEF FPC}
+  DLLHandle := LoadLibrary(PChar(FRuntimeLib));
+  {$ELSE}
+  DLLHandle := SafeLoadLibrary(FRuntimeLib);
+  {$endif}
+
+  if DLLHandle = 0 then
+    raise EJavaRuntimeCreation.Create('Could not load DLL ' + FRuntimeLib);
+  @CreateVM := getProcAddress(DLLHandle, 'JNI_CreateJavaVM');
+  @GetDefaultArgs := getProcAddress(DLLHandle, 'JNI_GetDefaultJavaVMInitArgs');
+  @GetCreatedVMs := getProcAddress(DLLHandle, 'JNI_GetCreatedJavaVMs');
+  if (@CreateVM = Nil) or (@GetDefaultArgs = Nil) or (@GetCreatedVMs = Nil) then
+    raise EJavaRuntimeCreation.Create('Dynamic Link Library ' + FRuntimeLib + ' is not valid.');
+  vmargs.version := $00010008;
+  vmargs2.version := $00010008;
+  GetDefaultArgs(@vmargs);
+  GetDefaultArgs(@vmargs2);
+end;
+
+function TJavaRuntime.GetVM : TJavaVM;
+var
+  PVM : PJavaVM;
+  penv : PJNIEnv;
+  args : Pointer;
+begin
+  if FJavaVM <> nil then
   begin
-    if DLLHandle <> 0 then
-      exit; // already initialized.
+    Result := FJavaVM;
+    Exit;
+  end;
+  if @CreateVM = nil then
+    Initialize;
+  if IsJava11 then
+  begin
+    InitJava11;
+    args := @vmargs;
+  end
+  else
+  begin
+    InitJava2;
+    args := @vmargs2;
+  end;
+  if CreateVM(@pvm, @penv, args) <>0 then
+    raise EJavaRuntimeCreation.Create('Could not create JVM');
+  TJavaVM.SetThreadPenv(penv);
+  FJavaVM := TJavaVM.Create(PVM);
+  Result := FJavaVM;
+end;
+
+procedure TJavaRuntime.InitJava11;
+begin
+  vmargs.properties := convertStrings(FProperties);
+  vmargs.classpath := PAnsiChar(Classpath);
+  vmargs.Verbose := FVerbose;
+  vmargs.DisableAsyncGC := FDisableAsyncGC;
+  vmargs.EnableVerboseGC := FVerboseGC;
+  vmargs.EnableClassGC := FEnableClassGC;
+  vmargs.CheckSource := FCheckSource;
+  vmargs.VerifyMode := FVerifyMode;
+  if Assigned(FExitProc) then
+    vmargs.Exit := FExitProc;
+  if Assigned(FAbortProc)  then
+    vmargs.abort := FAbortProc;
+  if Assigned(FPrintf) then
+    vmargs.vfprintf := FPrintf;
+  if FDebugPort <> 0 then
+    vmargs.DebugPort := FDebugPort;
+  if FMinHeapSize >0 then
+    vmargs.MinHeapSize := FMinHeapSize;
+  if FMaxHeapSize >0 then
+    vmargs.MaxHeapSize := FMaxHeapSize;
+  if FJavaStackSize >0 then
+    vmargs.JavaStackSize := FJavaStackSize;
+  if FNativeStackSize >0 then
+    vmargs.NativeStackSize := FNativeStackSize;
+end;
+
+procedure TJavaRuntime.InitJava2;
+var
+  I : Integer;
+  S : AnsiString;
+  PVMOption, PVO : PJavaVMOption;
+begin
+    // Just handle classpath and properties for now.
+      
+  VMArgs2.Noptions := 1+ FProperties.Count;
+  if (FVerbose <>0) or (FVerboseGC <>0) then inc(VMArgs2.Noptions);
+  if FVerboseGC <>0 then inc(VMArgs2.Noptions);
+  if FMinHeapSize >0 then inc(VMArgs2.Noptions);
+  if FMaxHeapSize >0 then inc(VMArgs2.Noptions);
+  if BootClasspath <> '' then inc(VMArgs2.Noptions);
+  if FEnableClassGC<>0 then inc(VMArgs2.NOptions);
+  if Assigned(FExitProc) then inc(VMargs2.NOptions);
+  if Assigned(FAbortProc)  then inc(VMArgs2.NOptions);
+  if Assigned(FPrintf) then inc(VMArgs2.NOptions);
+      
+  vmargs2.ignoreUnrecognized := True;
+  PVMOption := AllocMem(sizeof(JavaVMOPtion) * VMargs2.NOptions);
+  PVO := PVMOption;
+  S := '-Djava.class.path=' + Classpath;
+  {$IFDEF FPC}
+  PVMOption^.optionString := StrNew(PAnsiChar(S));
+  {$ELSE}
+  PVMOption^.optionString := System.AnsiStrings.StrNew(PAnsiChar(S));
+  {$endif}
+  
+  PVMOption^.extraInfo := Nil;
+  Inc(PVO);
+      
+  for I := 0 to  FProperties.Count - 1 do
+  begin
+    S := '-D' + FProperties[I];
 
     {$IFDEF FPC}
-    DLLHandle := LoadLibrary(PChar(FRuntimeLib));
+    PVO^.optionString := StrNew(PAnsiChar(S));
     {$ELSE}
-    DLLHandle := SafeLoadLibrary(FRuntimeLib);
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar(S));
     {$endif}
-
-    if DLLHandle = 0 then 
-      raise EJavaRuntimeCreation.Create('Could not load DLL ' + FRuntimeLib);
-    @CreateVM := getProcAddress(DLLHandle, 'JNI_CreateJavaVM');
-    @GetDefaultArgs := getProcAddress(DLLHandle, 'JNI_GetDefaultJavaVMInitArgs');
-    @GetCreatedVMs := getProcAddress(DLLHandle, 'JNI_GetCreatedJavaVMs');
-    if (@CreateVM = Nil) or (@GetDefaultArgs = Nil) or (@GetCreatedVMs = Nil) then
-      raise EJavaRuntimeCreation.Create('Dynamic Link Library ' + FRuntimeLib + ' is not valid.');
-    vmargs.version := $00010008;
-    vmargs2.version := $00010008;
-    GetDefaultArgs(@vmargs);
-    GetDefaultArgs(@vmargs2);
+     
+    Inc(PVO);
   end;
-  
-  function TJavaRuntime.GetVM : TJavaVM;
-  var
-    PVM : PJavaVM;
-    penv : PJNIEnv;
-    args : Pointer;
-  begin
-    if FJavaVM <> Nil then
-    begin
-      result := FJavaVM;
-      Exit;
-    end;
-    if @CreateVM = Nil then 
-      Initialize;
-    if IsJava11 then 
-    begin
-      InitJava11;
-      args := @vmargs;
-    end
-    else
-    begin
-      InitJava2;
-      args := @vmargs2;
-    end;
-    if CreateVM(@pvm, @penv, args) <>0 then
-      raise EJavaRuntimeCreation.Create('Could not create JVM');
-    TJavaVM.SetThreadPenv(penv);
-    FJavaVM := TJavaVM.Create(PVM);
-    result := FJavaVM;
-  end;
-
-  procedure TJavaRuntime.InitJava11;
-  begin
-    vmargs.properties := convertStrings(FProperties);
-    vmargs.classpath := PAnsiChar(Classpath);
-    vmargs.Verbose := FVerbose;
-    vmargs.DisableAsyncGC := FDisableAsyncGC;
-    vmargs.EnableVerboseGC := FVerboseGC;
-    vmargs.EnableClassGC := FEnableClassGC;
-    vmargs.CheckSource := FCheckSource;
-    vmargs.VerifyMode := FVerifyMode;
-    if Assigned(FExitProc) then
-      vmargs.Exit := FExitProc;
-    if Assigned(FAbortProc)  then 
-      vmargs.abort := FAbortProc;
-    if Assigned(FPrintf) then 
-      vmargs.vfprintf := FPrintf;
-    if FDebugPort <> 0 then 
-      vmargs.DebugPort := FDebugPort;
-    if FMinHeapSize >0 then 
-      vmargs.MinHeapSize := FMinHeapSize;
-    if FMaxHeapSize >0 then 
-      vmargs.MaxHeapSize := FMaxHeapSize;
-    if FJavaStackSize >0 then 
-      vmargs.JavaStackSize := FJavaStackSize;
-    if FNativeStackSize >0 then 
-      vmargs.NativeStackSize := FNativeStackSize;
-  end;
-
-  procedure TJavaRuntime.InitJava2;
-  var
-    I : Integer;
-    S : AnsiString;
-    PVMOption, PVO : PJavaVMOption;
-  begin
-      // Just handle classpath and properties for now.
       
-    VMArgs2.Noptions := 1+ FProperties.Count;
-    if (FVerbose <>0) or (FVerboseGC <>0) then inc(VMArgs2.Noptions);
-    if FVerboseGC <>0 then inc(VMArgs2.Noptions);
-    if FMinHeapSize >0 then inc(VMArgs2.Noptions);
-    if FMaxHeapSize >0 then inc(VMArgs2.Noptions);
-    if BootClasspath <> '' then inc(VMArgs2.Noptions);
-    if FEnableClassGC<>0 then inc(VMArgs2.NOptions);
-    if Assigned(FExitProc) then inc(VMargs2.NOptions);
-    if Assigned(FAbortProc)  then inc(VMArgs2.NOptions);
-    if Assigned(FPrintf) then inc(VMArgs2.NOptions);
-      
-    vmargs2.ignoreUnrecognized := True;
-    PVMOption := AllocMem(sizeof(JavaVMOPtion) * VMargs2.NOptions);
-    PVO := PVMOption;
-    S := '-Djava.class.path=' + Classpath;
+  if (FVerbose <> 0) or (FVerboseGC <> 0) then
+  begin
+    S := '-verbose:';
+    if FVerbose <> 0 then
+      S := S + 'class';
+    if FVerboseGC <> 0 then
+      S := S + ',';
+    if FVerboseGC <> 0 then
+      S := S + 'gc';
     {$IFDEF FPC}
-   PVMOption^.optionString := StrNew(PAnsiChar(S));
-   {$ELSE}
-    PVMOption^.optionString := System.AnsiStrings.StrNew(PAnsiChar(S));
-   {$endif}
-  
-    PVMOption^.extraInfo := Nil;
-    inc(PVO);
-      
-    for I:= 0 to  FProperties.Count -1 do
-    begin
-      S := '-D' + FProperties[I];
-     
-   {$IFDEF FPC}
     PVO^.optionString := StrNew(PAnsiChar(S));
-   {$ELSE}
-     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar(S));
-   {$endif}
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar(S));
+    {$endif}
      
-      inc(PVO);
-    end;
-      
-    if (FVerbose<>0) or (FVerboseGC <>0) then 
-    begin
-      S := '-verbose:';
-      if FVerbose<>0
-        then S := S + 'class';
-        if FVerboseGC<>0
-          then S := S + ',';
-      if FVerboseGC<>0
-        then S := S + 'gc';
-      {$IFDEF FPC}
-    PVO^.optionString := StrNew(PAnsiChar(S));
-   {$ELSE}
-     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar(S));
-   {$endif}
-     
-      inc(PVO);
-    end;
+    Inc(PVO);
+  end;
 
-    if FMinHeapSize>0 then
-    begin
+  if FMinHeapSize > 0 then
+  begin
     
     {$IFDEF FPC}
     PVO^.optionString := StrNew(PAnsiChar('-Xms' + IntToStr(FMinHeapSize)));
-   {$ELSE}
-     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xms' + IntToStr(FMinHeapSize)));
-   {$endif}
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xms' + IntToStr(FMinHeapSize)));
+    {$endif}
       
-      inc(PVO);
-    end;
+    Inc(PVO);
+  end;
       
-    if FMaxHeapSize>0 then
-    begin
-     {$IFDEF FPC}
+  if FMaxHeapSize > 0 then
+  begin
+    {$IFDEF FPC}
     PVO^.optionString := StrNew(PAnsiChar('-Xmx' + IntToStr(FMaxHeapSize)));
-   {$ELSE}
+    {$ELSE}
     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xmx' + IntToStr(FMaxHeapSize)));
-   {$endif}
+    {$endif}
 
       
-      inc(PVO);
-    end;
+    Inc(PVO);
+  end;
       
-    if FEnableClassGC <>0 then
-    begin
-      {$IFDEF FPC}
-      PVO^.optionString := StrNew(PAnsiChar('-Xnoclassgc'));
-   {$ELSE}
-     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xnoclassgc'));
-   {$endif}
+  if FEnableClassGC <> 0 then
+  begin
+    {$IFDEF FPC}
+    PVO^.optionString := StrNew(PAnsiChar('-Xnoclassgc'));
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xnoclassgc'));
+    {$endif}
 
     
-      inc(PVO);
-    end;
-      
-    if BootClasspath <> '' then
-    begin
-      {$IFDEF FPC}
-      PVO^.optionString := StrNew(PAnsiChar('-Xbootclasspath/p:' + BootClasspath));
-   {$ELSE}
-     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xbootclasspath/p:' + BootClasspath));
-   {$endif}
-
-      inc(PVO);
-    end;
-
-    if Assigned(FPrintf) then 
-    begin
-      {$IFDEF FPC}
-      PVO^.optionString := StrNew(PAnsiChar('exit'));
-   {$ELSE}
-      PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('exit'));
-   {$endif}
-
-     
-      PVO^.ExtraInfo := @FPrintf;
-      inc(PVO);
-    end;
-
-    if Assigned(FExitProc) then
-    begin
-      {$IFDEF FPC}
-       PVO^.optionString := StrNew(PAnsiChar('exit'));
-   {$ELSE}
-      PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('exit'));
-   {$endif}
-
-     
-      PVO^.ExtraInfo := @FExitProc;
-      inc(PVO);
-    end;
-
-    if Assigned(FAbortProc) then
-    begin
-       {$IFDEF FPC}
-      PVO^.optionString := StrNew(PAnsiChar('abort'));
-   {$ELSE}
-     PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('abort'));
-   {$endif}
-
-      
-      PVO^.ExtraInfo := @FAbortProc;
-    end;
-      
-    vmargs2.options := PVMOption;
-    vmargs2.version := $00010008;
+    Inc(PVO);
   end;
+      
+  if BootClasspath <> '' then
+  begin
+    {$IFDEF FPC}
+    PVO^.optionString := StrNew(PAnsiChar('-Xbootclasspath/p:' + BootClasspath));
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('-Xbootclasspath/p:' + BootClasspath));
+    {$endif}
+
+    Inc(PVO);
+  end;
+
+  if Assigned(FPrintf) then
+  begin
+    {$IFDEF FPC}
+    PVO^.optionString := StrNew(PAnsiChar('exit'));
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('exit'));
+    {$endif}
+
+     
+    PVO^.ExtraInfo := @FPrintf;
+    Inc(PVO);
+  end;
+
+  if Assigned(FExitProc) then
+  begin
+    {$IFDEF FPC}
+    PVO^.optionString := StrNew(PAnsiChar('exit'));
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('exit'));
+    {$endif}
+
+     
+    PVO^.ExtraInfo := @FExitProc;
+    Inc(PVO);
+  end;
+
+  if Assigned(FAbortProc) then
+  begin
+    {$IFDEF FPC}
+    PVO^.optionString := StrNew(PAnsiChar('abort'));
+    {$ELSE}
+    PVO^.optionString := System.AnsiStrings.StrNew(PAnsiChar('abort'));
+    {$endif}
+
+      
+    PVO^.ExtraInfo := @FAbortProc;
+  end;
+      
+  vmargs2.options := PVMOption;
+  vmargs2.version := $00010008;
+end;
 
   
 //convenience wrappers.
@@ -526,60 +526,59 @@ end;
 
 procedure TJavaRuntime.ProcessCommandLineOption(S : AnsiString);
 var
-//S:String;
   L  : String;
   function extractSize(S : AnsiString) : Integer;
   begin
-    if S[length(S)] = 'k'
-      then Result := $400
+    if S[length(S)] = 'k' then
+      Result := $400
+    else if S[length(S)] = 'm' then
+      Result := $100000
     else
-      if S[length(S)] = 'm'
-        then Result := $100000
-      else Result  := 1;
-    if Result<>1
-      then S:= Copy(S, 1, length(S)-1);
+      Result  := 1;
+    if Result <> 1 then
+      S:= Copy(S, 1, length(S) - 1);
     Result := Result * StrToIntDef(S, 0);
   end;
 begin
  //S:=S1;
   L  := LowerCase(S);
-  if (L = '-v') or (L = 'verbose')
-    then Verbose := true
-  else if (L = '-verbosegc')
-    then VerboseGC := true
-  else if (L = '-noasync')
-    then DisableAsyncGC := true
-  else if (L = '-noclassgc')
-    then EnableClassGC := false
-  else if (L = '-verify')
-    then VerifyMode := 2
-  else if (L = '-noverify')
-    then VerifyMode := 0
-  else if (L = '-verifyremote')
-    then VerifyMode :=1
-  else if (L = '-nojit')
-    then AddProperty('java.compiler=')
-  else if Copy(L, 1, 3) = '-cp'
-    then FClasspath.AddPath(Copy(S, 5, length(S)))
-  else if Copy(L, 1, 10) = '-classpath'
-    then FClasspath.AddPath(Copy(S, 12, length(S)))
-  else if Copy(L, 1, 2) = '-d'
-    then AddProperty(Copy(S, 3, length(S)))
-  else if Copy(L, 1, 3) = '-ms'
-    then MinHeapSize := ExtractSize(Copy(L, 4, length(L)))
-  else if Copy(L, 1, 3) = '-mx'
-    then MaxHeapSize := ExtractSize(Copy(L, 4, length(L)))
-  else if Copy(L, 1, 3) = '-ss'
-    then NativeStackSize := ExtractSize(Copy(L, 4, length(L)))
-  else if Copy(L, 1, 3) = '-oss'
-    then NativeStackSize := ExtractSize(Copy(L, 5, length(L)));
+  if (L = '-v') or (L = 'verbose') then
+    Verbose := true
+  else if (L = '-verbosegc') then
+    VerboseGC := true
+  else if (L = '-noasync') then
+    DisableAsyncGC := true
+  else if (L = '-noclassgc') then
+    EnableClassGC := false
+  else if (L = '-verify') then
+    VerifyMode := 2
+  else if (L = '-noverify') then
+    VerifyMode := 0
+  else if (L = '-verifyremote') then
+    VerifyMode :=1
+  else if (L = '-nojit') then
+    AddProperty('java.compiler=')
+  else if Copy(L, 1, 3) = '-cp' then
+    FClasspath.AddPath(Copy(S, 5, length(S)))
+  else if Copy(L, 1, 10) = '-classpath' then
+    FClasspath.AddPath(Copy(S, 12, length(S)))
+  else if Copy(L, 1, 2) = '-d' then
+    AddProperty(Copy(S, 3, length(S)))
+  else if Copy(L, 1, 3) = '-ms' then
+    MinHeapSize := ExtractSize(Copy(L, 4, length(L)))
+  else if Copy(L, 1, 3) = '-mx' then
+    MaxHeapSize := ExtractSize(Copy(L, 4, length(L)))
+  else if Copy(L, 1, 3) = '-ss' then
+    NativeStackSize := ExtractSize(Copy(L, 4, length(L)))
+  else if Copy(L, 1, 3) = '-oss' then
+    NativeStackSize := ExtractSize(Copy(L, 5, length(L)));
 end;
-  
+
 procedure TJavaRuntime.ProcessCommandLine(Options : TStrings);
 var
   I: Integer;
 begin
-  for I:= 0 to Options.Count-1 do
+  for I := 0 to Options.Count - 1 do
     ProcessCommandLineOption(Options[I]);
 end;
   
@@ -698,7 +697,7 @@ end;
 destructor TJavaRuntime.Destroy;
 begin
   DefaultRuntime := Nil;
-    if (dllHandle <>0) and (instanceCount = 0) then
+    if (dllHandle <> 0) and (instanceCount = 0) then
       if FreeLibrary(dllHandle) then
         dllHandle := 0;
   inherited Destroy;
@@ -708,7 +707,7 @@ function TJavaRuntime.FindMSJava : Boolean;
 var
   DLLPath : AnsiString;
 begin
-  result := False;
+  Result := False;
   {$IFDEF FPC}
   GetSystemDirectory(SystemDirBuf, MAX_PATH);
   {$ELSE}
@@ -718,19 +717,19 @@ begin
   DLLPath:= DLLPath  + '\msjava.dll';
   if FileExists(DLLPath) then
   begin
-    FJava11 := true;
+    FJava11 := True;
     FRuntimeLib := DLLPath;
     FJavaHome := SystemDirBuf;
-    FMS := true;
-    result := true;
+    FMS := True;
+    Result := True;
   end;
 end;
-  
+
 function TJavaRuntime.FindJava12 : Boolean;
 var
   I : Integer;
 begin
-  result := false; //false;
+  Result := False; //false;
 
 {FRuntimeLib := FindOnSystemPath('javai.dll');
   if FRuntimeLib <> '' then
@@ -745,15 +744,15 @@ begin
 //WRITELN('\Software\JavaSoft\JDK\'+ReadRegKey('\SOFTWARE\JavaSoft\JDK','CurrentVersion'));
   if CheckJavaRegistryKey('\Software\JavaSoft\Java Development Kit\' + ReadRegKey('\SOFTWARE\JavaSoft\Java Development Kit','CurrentVersion')) then
   begin
-    FJava11 := false; //This is a 1.2 VM.
-    result := true; // success!
+    FJava11 := False; //This is a 1.2 VM.
+    Result := True; // success!
     Exit;
   end;
 
   if CheckJavaRegistryKey('\Software\JavaSoft\Java Runtime Environment\'+ReadRegKey('\SOFTWARE\JavaSoft\Java Runtime Environment','CurrentVersion')) then
   begin
-    FJava11 := false; //This is a 1.2 VM.
-    result := true; // success!
+    FJava11 := False; //This is a 1.2 VM.
+    Result := True; // success!
     Exit;
   end;
 
@@ -778,35 +777,35 @@ begin
   if FRuntimeLib <> '' then
   begin
     FJavaHome := ExtractFileDir(ExtractFileDir(FRuntimeLib));
-    result := true;
-    FJava11 := true;
-    exit; // success!
+    Result := True;
+    FJava11 := True;
+    Exit; // success!
   end;
   
 // Failing that, search the Windows registry for location.
   
   if not needsJDK then
   begin
-    for I:=Low(JRE11Keys) to High(JRE11Keys) do
+    for I := Low(JRE11Keys) to High(JRE11Keys) do
     begin
       if (CheckJavaRegistryKey(JRE11Keys[I])) then
       begin
-        result := true; // success!
-        FJava11 := true;
+        Result := True; // success!
+        FJava11 := True;
         Exit;
       end;
     end;
   end;
-  for I:=Low(JDK11Keys) to High(JDK11Keys) do
+  for I := Low(JDK11Keys) to High(JDK11Keys) do
   begin
     if (CheckJavaRegistryKey(JDK11Keys[I])) then
     begin
-      result := true; // success!
-      FJava11 := true;
+      Result := True; // success!
+      FJava11 := True;
       Exit;
     end;
   end;
-  result := false; // failure.
+  Result := False; // failure.
 end;
 
 {Checks the Java registry key given as an argument.
@@ -818,46 +817,48 @@ var
   reg : TRegistry;
   S, HotspotLib : AnsiString;
 begin
-  result := false;
+  Result := False;
   reg := TRegistry.Create(KEY_READ or $0100);
   try
     reg.RootKey := HKEY_LOCAL_MACHINE;
-    if reg.OpenKey(key, false) then
+    if reg.OpenKey(key, False) then
     begin
-      if true {reg.ValueExists('RuntimeLib')} then
+      if True {reg.ValueExists('RuntimeLib')} then
+      begin
+        S := reg.ReadString('RuntimeLib');
+       // if S = '' then S := reg.ReadString('JavaHome') + '\bin\classic\jvm.dll';
+
+        if S = '' then
+          S := reg.ReadString('JavaHome') + '\bin\server\jvm.dll';
+
+        if FileExists(S) then
         begin
-          S:= reg.ReadString('RuntimeLib');
-         // if S = '' then S := reg.ReadString('JavaHome') + '\bin\classic\jvm.dll';
-
-if S = '' then S := reg.ReadString('JavaHome') + '\bin\server\jvm.dll';
-
-          if FileExists(S) then
+          Result := True;
+          if not UseClassicVM then
+          begin
+            HotspotLib := ExtractFileDir(ExtractFileDir(S)) + '\server\jvm.dll';
+            if FileExists(HotspotLib) then
             begin
-              result := true;
-              if not UseClassicVM then
-              begin
-                  HotspotLib := ExtractFileDir(ExtractFileDir(S)) + '\server\jvm.dll';
-//writeln(HotspotLib);
-                  if FileExists(HotspotLib) then begin
-                    S := HotspotLib;
-                    FHotspot := True;
-                  end;
-                end;
-              FRuntimeLib := S;
-              if reg.ValueExists('JavaHome') then
-                FJavaHome := reg.ReadString('JavaHome')
-              else
-                FJavaHome := ExtractFileDir(ExtractFileDir(ExtractFileDir(FRuntimeLib)));
+              S := HotspotLib;
+              FHotspot := True;
             end;
-          Exit;
-        end
-      else begin
+          end;
+          FRuntimeLib := S;
+          if reg.ValueExists('JavaHome') then
+            FJavaHome := reg.ReadString('JavaHome')
+          else
+            FJavaHome := ExtractFileDir(ExtractFileDir(ExtractFileDir(FRuntimeLib)));
+        end;
+        Exit;
+      end
+      else
+      begin
         if reg.ValueExists('JavaHome') then
           S := reg.ReadString('JavaHome')
         else if reg.valueExists('Home') then
-            S := reg.ReadString('Home')
+          S := reg.ReadString('Home')
         else if reg.valueExists('java_home') then
-            S := reg.ReadString('java_home')
+          S := reg.ReadString('java_home')
         else
           Exit; // failure!
       end;
@@ -884,25 +885,25 @@ end;
 procedure TJavaRuntime.SetNativeStackSize(Size : Integer);
 begin
   if Size > 0 then
-     FNativeStackSize := Size;
+    FNativeStackSize := Size;
 end;
 
 procedure TJavaRuntime.SetJavaStackSize(Size : Integer);
 begin
   if Size > 0 then
-     FJavaStackSize := Size;
+    FJavaStackSize := Size;
 end;
   
 procedure TJavaRuntime.SetMinHeapSize(Size : Integer);
 begin
   if Size  > 0 then
-     FMinHeapSize := Size;
+    FMinHeapSize := Size;
 end;
   
 procedure TJavaRuntime.SetMaxHeapSize(Size : Integer);
 begin
   if Size  > 0 then
-     FMaxHeapSize := Size;
+    FMaxHeapSize := Size;
 end;
   
 procedure TJavaRuntime.SetVerifyMode(Arg : Integer);
@@ -961,12 +962,12 @@ end;
   
 function TJavaRuntime.SanityCheck(classname, filename : AnsiString) : AnsiString;
 begin
-  result := FClasspath.SanityCheck(classname, filename);
+  Result := FClasspath.SanityCheck(classname, filename);
 end;
-  
+
 function TJavaRuntime.SanityCheckSource(filename : AnsiString) : AnsiString;
 begin
-  result := FClasspath.sanityCheckSource(filename);
+  Result := FClasspath.sanityCheckSource(filename);
 end;
   
 procedure TJavaRuntime.AddProperty(S: AnsiString);
@@ -1026,7 +1027,7 @@ begin
     cpath.AddPath(BasePath);
     cpath.AddDir(getCurrentDir); // Maybe better off without this.
   end;
-  result := cpath;
+  Result := cpath;
 end;
 
 
@@ -1066,7 +1067,7 @@ begin
     cpath.AddPath(BasePath);
     cpath.AddDir(getCurrentDir); // Maybe better off without this.
   end;
-  result := cpath;
+  Result := cpath;
 end;
 
 constructor TClasspath.Create;
@@ -1198,7 +1199,7 @@ begin
     raise EClasspathException.Create('File ' + fullFile + ' should be on relative path ' +package);
   basePath := Copy(pathName, 1, length(PathName) - Length(Temp));
   AddDir(basePath);
-  result := BasePath;
+  Result := BasePath;
 end;
   
 function TClasspath.SanityCheckSource(filename : AnsiString) : AnsiString;
@@ -1208,7 +1209,7 @@ begin
   Package := GetPackageName(Filename);
   Classname := Package + ExtractFileName(Filename);
   ChopExtension(Classname);
-  result := SanityCheck(Classname, Filename);
+  Result := SanityCheck(Classname, Filename);
 end;
   
 // Get the package name inside a source file.
