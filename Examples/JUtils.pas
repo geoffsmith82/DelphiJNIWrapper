@@ -39,40 +39,42 @@ interface
    uses System.Classes, WinAPI.Windows,System.ansistrings;
    {$endif}
 
-    
+
 // Outputs a message. Sends it to the console or
 // to a GUI message window depending.
-    
-  function dotToSlash(const s : AnsiString) : AnsiString;
-  function slashToDot(const s : AnsiString) : AnsiString;
-          
+
+  function DotToSlash(const s : String) : AnsiString;
+  function SlashToDot(const s : String) : String;
+
   function ConvertStrings(Strings : TStrings) : Pointer;
-    
+
 //wrappers around the Win32 API calls.
-  function getEnvironmentString(S : AnsiString) : AnsiString;
-  procedure setEnvironmentString(key, value : AnsiString);
-    
+  function GetEnvironmentString(S : String) : String;
+  procedure SetEnvironmentString(key, value : String);
+
   // redeclared here because in D2, the prototype in Window.pas is incorrect.
-  function SearchPath(lpPath, lpFileName, lpExtension: PAnsiChar; 
-                          nBufferLength: DWORD; 
-                          lpBuffer: PAnsiChar; 
+  function SearchPath(lpPath, lpFileName, lpExtension: PAnsiChar;
+                          nBufferLength: DWORD;
+                          lpBuffer: PAnsiChar;
                           var lpFilePart: PAnsiChar): DWORD; stdcall;
-    
+
+  function SearchPath; external kernel32 name 'SearchPathA';
+
   //uses the above SearchPath routine to
   // find the file on path. Returns full path or empty string.
-  function FindOnSystemPath(Filename : AnsiString) : AnsiString;
+  function FindOnSystemPath(Filename : String): String;
     
   // converts the dots or forward slashes to backslashes
-  function toBackSlash(const s : ansistring) : ansiString; 
+  function ToBackSlash(const s : string): String;
 
   procedure ChopExtension(var Filename : AnsiString);
 
 implementation
-    {$IFDEF FPC}
-    uses SysUtils, JavaRuntime;
-    {$ELSE}
-    uses System.SysUtils, JavaRuntime;
-   {$endif}
+{$IFDEF FPC}
+uses SysUtils, JavaRuntime;
+{$ELSE}
+uses System.SysUtils, JavaRuntime;
+{$endif}
 
     
 var
@@ -81,102 +83,100 @@ var
 {little routine to convert the dots to slashes for fully
 qualified Class names.}
     
-  function dotToSlash(const s : ansistring) : AnsiString;
-  var
-    I: Integer;
-  begin
-    Result:= s;
-    for I := 1 to length(Result) do
-      if Result[I] = '.' then 
-        Result[I] := '/';
-  end;
+function DotToSlash(const s : String) : AnsiString;
+var
+  I: Integer;
+begin
+  Result:= s;
+  for I := 1 to length(Result) do
+    if Result[I] = '.' then
+      Result[I] := '/';
+end;
     
-  function slashToDot(const s: AnsiString) : AnsiString;
-  var
-    I : Integer;
-  begin
-    Result := s;
-    for I :=  1 to length(Result) do
-      if Result[I] = '/' then 
-        Result[I] := '.';
-  end;
+function SlashToDot(const s: String) : String;
+var
+  I : Integer;
+begin
+  Result := s;
+  for I :=  1 to length(Result) do
+    if Result[I] = '/' then
+      Result[I] := '.';
+end;
 
 
-  function toBackSlash(const s : ansistring) : AnsiString;
-  var
-    I: Integer;
-  begin
-    Result:= S;
-    for I := 1 to length(S) do
-      if (Result[I] = '.') or (Result[I] = '/') then 
-        Result[I] := '\';
-  end;
+function ToBackSlash(const s : string) : String;
+var
+  I: Integer;
+begin
+  Result:= S;
+  for I := 1 to length(S) do
+    if (Result[I] = '.') or (Result[I] = '/') then
+      Result[I] := '\';
+end;
 
 {Convert a TStrings object to a null-terminated 
   sequence of pointers to PAnsiChar. }
     
-  function ConvertStrings(Strings : TStrings) : Pointer;
-  var   
-    PPC : ^PAnsiChar;
-    I : Integer;
-   str:ansistring;
+function ConvertStrings(Strings : TStrings) : Pointer;
+var
+  PPC : ^PAnsiChar;
+  I : Integer;
+  str : ansistring;
+begin
+  Result  := Nil;
+  if Strings = Nil then
+    Exit;
+  if Strings.Count =0 then
+    Exit;
+  PPC  := allocMem((1 + Strings.Count) * sizeof(PAnsiChar));
+  result := PPC;
+  for I := 0 to  Strings.Count-1 do
   begin
-    Result  := Nil;
-    if Strings = Nil then 
-      Exit;
-    if Strings.Count =0 then 
-      Exit;
-    PPC  := allocMem((1 + Strings.Count) * sizeof(PAnsiChar));
-    result := PPC;
-    for I := 0 to  Strings.Count-1 do 
-    begin
-      PPC^ := PAnsiChar(ansistring(Strings[I])); 
-      inc(PPC);
-    end;
+    PPC^ := PAnsiChar(ansistring(Strings[I]));
+    inc(PPC);
   end;
+end;
 
 
    {Trivial wrapper of the SearchPath API call.}
     
-  function FindOnSystemPath(Filename : AnsiString) : AnsiString;
-  var
-    PC : PAnsiChar;
-  begin
-    if SearchPath(Nil, PAnsiChar(Filename), Nil, MAX_PATH, @Buf, PC)<>0 then
-    Result := AnsiString(Buf);
-  end;
+function FindOnSystemPath(Filename : String) : String;
+var
+  PC : PAnsiChar;
+begin
+  if SearchPath(nil, PAnsiChar(Filename), nil, MAX_PATH, @Buf, PC) <> 0 then
+  Result := String(Buf);
+end;
     
     
-  function getEnvironmentString(S : AnsiString) : AnsiString;
-  begin
-   {$IFDEF FPC}
-   result:=getEnvironmentVariable(S)
-   {$ELSE}
-   if getEnvironmentVariable(Pchar(S), @Buf, 1023) >0 then
-      result := AnsiString(Buf);
-   {$endif}
-   end;
+function GetEnvironmentString(S : String) : String;
+begin
+  {$IFDEF FPC}
+  Result := GetEnvironmentVariable(S)
+  {$ELSE}
+  if GetEnvironmentVariable(Pchar(S), @Buf, 1023) >0 then
+    Result := String(Buf);
+  {$endif}
+end;
     
-  procedure SetEnvironmentString(key, value : AnsiString);
-  begin
-  
-    SetEnvironmentVariable(PChar(key), PChar(value));
-  end;
+procedure SetEnvironmentString(key, value : String);
+begin
+  SetEnvironmentVariable(PChar(key), PChar(value));
+end;
 
-  procedure ChopExtension(var Filename : AnsiString);
-  var
-    Ext : AnsiString;
-  begin
-   {$IFDEF FPC}
-    Ext := ExtractFileExt(Filename);
-   {$ELSE}
-    Ext := system.ansistrings.ExtractFileExt(Filename);
-   {$endif}
+procedure ChopExtension(var Filename : AnsiString);
+var
+  Ext : String;
+begin
+ {$IFDEF FPC}
+  Ext := ExtractFileExt(Filename);
+ {$ELSE}
+  Ext := ExtractFileExt(Filename);
+ {$endif}
 
-    Filename := Copy(Filename, 1, Length(Filename) - Length(Ext));
-  end;
+  Filename := Copy(Filename, 1, Length(Filename) - Length(Ext));
+end;
 
-    
-  function SearchPath; external kernel32 name 'SearchPathA';
+
 
 end.
