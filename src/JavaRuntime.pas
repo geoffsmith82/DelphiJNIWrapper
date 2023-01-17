@@ -866,16 +866,14 @@ begin
     else
       Exit;
 
-   // Now check that it's really there.
-    if S[length(S)] = Chr(92) then
-      S := Copy(S, 1, length(S)-1);
+    S := ExcludeTrailingPathDelimiter(s);
     
     if FileExists(S + '\bin\server\jvm.dll') then
     begin
       FRuntimeLib := S + '\bin\server\jvm.dll'; // Success!
         //writeln(fruntimelib);
       FJavaHome := S;
-      result := true;
+      Result := True;
     end;
   finally
     Reg.Free;
