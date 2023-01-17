@@ -16,7 +16,11 @@
 
 library native;
 
-uses SysUtils, Classes, JNI, JNIWrapper;
+uses
+  SysUtils,
+  Classes,
+  JNI,
+  JNIWrapper;
 
 
 
@@ -37,35 +41,35 @@ uses SysUtils, Classes, JNI, JNIWrapper;
                                           message : jstring;
                                           width, height : jint
                                           ) : jobject ; stdcall;
-  var
-      S : String;
-      JavaClass : TJavaClass;
-      JavaObject : TJavaObject;
-      Params : TJavaParams;
-  begin
-    // The following line is vital for using the JNI Wrapper code
-    // in the J->D direction.
-    TJavaVM.SetThreadPenv(penv);
+var
+  S : String;
+  JavaClass : TJavaClass;
+  JavaObject : TJavaObject;
+  Params : TJavaParams;
+begin
+  // The following line is vital for using the JNI Wrapper code
+  // in the J->D direction.
+  TJavaVM.SetThreadPenv(penv);
 
-    // Convert the message to a delphi string.
-    S  := JToDString(message);
+  // Convert the message to a delphi string.
+  S  := JToDString(message);
     
-    JavaClass := TJavaClass.Create('NativeExample$PresizedClosableFrame');
-    Params := TJavaParams.Create;
-    Params.AddString('Greetings from Delphi');
-    Params.AddInt(width);
-    Params.AddInt(height);
-    JavaObject := TJavaObject.Create(JavaClass, Params);
-    MessageBox(0, PChar(S), 'Just a Windows Message Box', 0);
+  JavaClass := TJavaClass.Create('NativeExample$PresizedClosableFrame');
+  Params := TJavaParams.Create;
+  Params.AddString('Greetings from Delphi');
+  Params.AddInt(width);
+  Params.AddInt(height);
+  JavaObject := TJavaObject.Create(JavaClass, Params);
+  MessageBox(0, PChar(S), 'Just a Windows Message Box', 0);
 
-// Use the Object wrapper's handle as the return value.
-    result := JavaObject.Handle;
+  // Use the Object wrapper's handle as the return value.
+  Result := JavaObject.Handle;
 
-    // Clean up 
-    Params.Free;
-    JavaClass.Free;
-    JavaObject.Free;
-  end;
+  // Clean up
+  Params.Free;
+  JavaClass.Free;
+  JavaObject.Free;
+end;
 
 exports Java_NativeExample_delphiFunc;
 

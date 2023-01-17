@@ -23,30 +23,34 @@ program jtest1;
 
 {$APPTYPE CONSOLE}
 
-    uses
+uses
 {$IFDEF FPC}
-        SysUtils, Classes, JavaRuntime;
+  SysUtils,
+  Classes,
+  JavaRuntime;
 {$ELSE}
-    system.SysUtils, system.Classes, JavaRuntime;
+  System.SysUtils,
+  System.Classes,
+  JavaRuntime;
 {$ENDIF}
-    var
-        Strings : TStringList;
-        Runtime : TJavaRuntime;
+var
+  Strings : TStringList;
+  Runtime : TJavaRuntime;
 
-    begin
-        try
-            Strings := TStringList.Create;
-            Strings.Add('Hello, world.');
-            Strings.Add('Salut, monde.');
-            Strings.Add('Hola, mundo.');
-           Runtime := TJavaRuntime.GetDefault;
-           //Runtime := TJavaRuntime.Create(SunJava2); 
-            Runtime.CallMain('HelloWorld', Strings);
-            Runtime.Wait;
-            Strings.Free;
-        except
-            on EJvmException do 
-                ShowException(ExceptObject, ExceptAddr);
-        end;
+begin
+  try
+    Strings := TStringList.Create;
+    Strings.Add('Hello, world.');
+    Strings.Add('Salut, monde.');
+    Strings.Add('Hola, mundo.');
+    Runtime := TJavaRuntime.GetDefault;
+    //Runtime := TJavaRuntime.Create(SunJava2);
+    Runtime.CallMain('HelloWorld', Strings);
+    Runtime.Wait;
+    Strings.Free;
+  except
+    on EJvmException do
+      ShowException(ExceptObject, ExceptAddr);
+  end;
 end.
 

@@ -20,70 +20,61 @@ program jtest2;
 
 {$APPTYPE CONSOLE}
 
-    uses
+uses
 {$IFDEF FPC}
-       Windows, 
-        SysUtils,
-        Classes,
-        JNIWrapper,
-        JNI,Javaruntime;
+  Windows,
+  SysUtils,
+  Classes,
+  JNIWrapper,
+  JNI,Javaruntime;
 {$ELSE}
-    winapi.Windows, 
-        system.SysUtils,
-        system.Classes,
-        JNIWrapper,
-       JNI,Javaruntime;
+  winapi.Windows,
+  System.SysUtils,
+  System.Classes,
+  JNIWrapper,
+  JNI,
+  JavaRuntime;
 {$ENDIF}
 
-       
-    var
-        JNITest : TJavaClass;
-        Params : TJavaParams;
-        JMethod : TJavaMethod;
-        Runtime : TJavaRuntime;
-        arr1:array of jlong;
-        i:integer;        
+var
+  JNITest : TJavaClass;
+  Params : TJavaParams;
+  JMethod : TJavaMethod;
+  Runtime : TJavaRuntime;
+  arr1:array of jlong;
+  i:integer;
 begin
-
- setlength(arr1,4);
+  SetLength(arr1,4);
  
- for i:=0 to high(arr1)     
-   do  arr1[i]:=i;
+  for i:=0 to high(arr1) do
+    arr1[i]:=i;
 
-Runtime := TJavaRuntime.GetDefault;  
-//Runtime := TJavaRuntime.Create(SunJava2); 
+  Runtime := TJavaRuntime.GetDefault;
+  //Runtime := TJavaRuntime.Create(SunJava2);
 
-       try
+  try
+    Params := TJavaParams.Create;
+    Params.addInt(13);
+    Params.addLong(11);
+    Params.addString('A Brave New World');
+    params.addLongArray(arr1);
 
-         
-      
-             Params := TJavaParams.Create;
-             Params.addInt(13);
-             Params.addLong(11);
-             Params.addString('A Brave New World');
-             params.addLongArray(arr1);
-
-            JNITest := TJavaClass.Create('HelloWorld');
+    JNITest := TJavaClass.Create('HelloWorld');
              
-            JMethod := TJavaMethod.Create(JNITest, 'test', static, AInt, params, Nil);
+    JMethod := TJavaMethod.Create(JNITest, 'test', static, AInt, params, Nil);
           
-            JMethod.Call(Params, nil);
-           
+    JMethod.Call(Params, nil);
 
-            Params.Free;
-            JMethod.Free;
-            JNITest.Free;
+    Params.Free;
+    JMethod.Free;
+    JNITest.Free;
    
-      setlength(arr1,0);
-
-   
-
-              
-        except
-         on EJvmException do 
-             ShowException(ExceptObject, ExceptAddr);
-        end;
-runtime.callexit(0);
-runtime.free;
+    SetLength(arr1, 0);
+  except
+    on EJvmException do
+      ShowException(ExceptObject, ExceptAddr);
+  end;
+  runtime.callexit(0);
+  runtime.free;
 end.
 

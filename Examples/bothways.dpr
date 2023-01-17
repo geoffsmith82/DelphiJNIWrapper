@@ -24,32 +24,29 @@ program bothways;
 uses
 
 {$IFDEF FPC}
-        SysUtils, Classes,
+  SysUtils,
+  Classes,
   JavaRuntime;
-
 {$ELSE}
-     system.SysUtils, system.Classes,
+  System.SysUtils,
+  System.Classes,
   JavaRuntime;
 {$ENDIF}
 
-
- 
-
 var
   Runtime : TJavaRuntime;
-
 begin
   try
-//    Runtime := TJavaRuntime.Create(MSJava); // If you used this line, you would create a MS JVM.
+    //    Runtime := TJavaRuntime.Create(MSJava); // If you used this line, you would create a MS JVM.
 
- Runtime := TJavaRuntime.Create(SunJava2); 
-// We can pass a Nil as the String list and this
-// gets massaged into a java String[] array with zero elements.
-    Runtime.callMain('NativeExample', Nil);
+    Runtime := TJavaRuntime.Create(SunJava2);
+    // We can pass a Nil as the String list and this
+    // gets massaged into a java String[] array with zero elements.
+    Runtime.CallMain('NativeExample', Nil);
     Runtime.Wait;
- 
   except
-    on Exception do ShowException(ExceptObject, ExceptAddr);
+    on Exception do
+      ShowException(ExceptObject, ExceptAddr);
   end;
 end.
 
