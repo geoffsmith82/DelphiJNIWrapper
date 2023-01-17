@@ -48,7 +48,7 @@ uses System.Classes, WinAPI.Windows, System.Win.Registry, System.SysUtils, JNI, 
 
 type
 
-  JvmType = (SunJava1, SunJava2, MSJava);
+  JvmType = (SunJava1, SunJava2);
   RuntimeOptions = set of JvmType;
   PPJavaVM = ^PJavaVM;
 
@@ -106,7 +106,6 @@ type
     FNativeStackSize : Integer;
     function FindJava11 : Boolean;
     function FindJava12 : Boolean;
-    function FindMSJava : Boolean;
     function CheckJavaRegistryKey(key : AnsiString) : boolean;
     function GetClasspath : AnsiString;
     procedure SetClasspath(S: AnsiString);
@@ -169,7 +168,6 @@ type
     destructor Destroy; override;
     class function GetDefault : TJavaRuntime;
     class procedure SetJava11(Java11 : Boolean);
-    class procedure SetMSJava(MSJava : Boolean);
     class procedure SetAppClassPath(path : AnsiString);
     class procedure SetBasePath(path : AnsiString);
     class procedure SetNeedTools(B : Boolean); // a bit of a hack for use by SmartJC.
@@ -188,7 +186,6 @@ var
   {$ENDIF}
   NeedsJDK : Boolean; // // True, if we need the sun.* classes for compilation, etc.
   Prefers11 : Boolean; // Do we look for java 1.1 first?
-  PrefersMS : Boolean; // Do we look for MS JVM first?
   UseClassicVM : Boolean; // Do we use the classic VM?
   GetDefaultArgs : TGetDefaultArgs;
   CreateVM : TCreateVM;
@@ -591,13 +588,6 @@ begin
   begin
     FirstChoice := SunJava2;
     SecondChoice := SunJava1;
-    ThirdChoice := MSJava;
-    if PrefersMS then
-    begin
-      FirstChoice := MSJava;
-      SecondChoice := SunJava2;
-      ThirdChoice := SunJava1;
-    end;
     if Prefers11 then
     begin
       temp := FirstChoice;
@@ -625,11 +615,6 @@ end;
 class procedure TJavaRuntime.SetClassicVM(B : Boolean);
 begin
   UseClassicVM := B;
-end;
-  
-class procedure TJavaRuntime.SetMSJava(MSJava : Boolean);
-begin
-  PrefersMS := MSJava;
 end;
   
 class procedure TJavaRuntime.SetNeedTools(B : Boolean);
@@ -684,9 +669,6 @@ begin
      SunJava2:
       if not FindJava12 then
         raise EJavaRuntimeNotFOund.Create('Java 2 runtime not found');
-    MSJava:
-      if not FindMSJava then
-        raise EJavaRuntimeNotFound.Create('MS Java runtime not found');
   end;
   DefaultRuntime := Self; // set the singleton
   FClasspath := TClasspath.GetDefault;
@@ -703,28 +685,6 @@ begin
   inherited Destroy;
 end;
   
-function TJavaRuntime.FindMSJava : Boolean;
-var
-  DLLPath : AnsiString;
-begin
-  Result := False;
-  {$IFDEF FPC}
-  GetSystemDirectory(SystemDirBuf, MAX_PATH);
-  {$ELSE}
-  GetSystemDirectory(@SystemDirBuf, MAX_PATH);
-  {$ENDIF}
-  DLLPath := SystemDirBuf;
-  DLLPath:= DLLPath  + '\msjava.dll';
-  if FileExists(DLLPath) then
-  begin
-    FJava11 := True;
-    FRuntimeLib := DLLPath;
-    FJavaHome := SystemDirBuf;
-    FMS := True;
-    Result := True;
-  end;
-end;
-
 function TJavaRuntime.FindJava12 : Boolean;
 var
   I : Integer;
