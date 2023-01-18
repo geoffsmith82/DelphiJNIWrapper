@@ -56,7 +56,6 @@ uses
   JUtils;
 {$endif}
 
-{$R-}
 
 type
 
@@ -1281,5 +1280,3 @@ begin
 end;
 
 end.
-
-{$R+}

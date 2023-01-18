@@ -44,8 +44,6 @@ uses Classes, Windows, Registry, SysUtils, JNI, JUtils, JNIWrapper;
 uses System.Classes, WinAPI.Windows, System.Win.Registry, System.SysUtils, JNI, JUtils, JNIWrapper,System.AnsiStrings;
 {$endif}
 
-{$R-}
-
 type
 
   JvmType = (SunJava1, SunJava2);
@@ -1238,4 +1236,4 @@ begin
 end;
   
 
-{$R+}
+end.
