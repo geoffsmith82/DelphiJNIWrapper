@@ -4,7 +4,7 @@
     Notes on Use
     Licensing Terms 
 
-Version: 2.94
+Version: 2.95
 
 Date:
 
@@ -39,6 +39,8 @@ function JshortArrayToDsmallintArray(jarr : JShortArray) : TDsmallintArray;
 function JbooleanArrayToDbooleanArray(jarr : JBooleanArray) : TDbooleanArray; 
 ```
 And don't forget to call TJavaVM.freeRef() method from Delphi or FreePascal when you need to garbage collect and free the memory that was allocated. 
+
+***geoffsmith82:*** I have tidied up the code and Used Delphi Style function Capitalization for delphi code.  I removed hte Microsoft Java VM as it hasn't existed for probably 20 years after the lawsuit from Oracle.  Converted some functions from AnsiString to String.  I have been using Delphi 11.2.
 
 Read the rest:
 
