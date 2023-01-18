@@ -1000,7 +1000,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetDoubleArrayElements(penv, jarr, 0);
+  d1 := penv^.GetDoubleArrayElements(penv, jarr, nil);
   i := 0;
   if len > 0 then 
   begin
@@ -1023,7 +1023,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetFloatArrayElements(penv, jarr, 0);
+  d1 := penv^.GetFloatArrayElements(penv, jarr, nil);
   i := 0;
   if len > 0 then 
   begin
@@ -1046,7 +1046,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetCharArrayElements(penv, jarr,0);
+  d1 := penv^.GetCharArrayElements(penv, jarr, nil);
   i := 0;
   if len > 0 then 
   begin
@@ -1069,7 +1069,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetByteArrayElements(penv, jarr, 0);
+  d1 := penv^.GetByteArrayElements(penv, jarr, nil);
   i:=0;
   if len > 0 then 
   begin
@@ -1092,7 +1092,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetShortArrayElements(penv, jarr, 0);
+  d1 := penv^.GetShortArrayElements(penv, jarr, nil);
   i:= 0;
   if len > 0 then 
   begin
@@ -1115,7 +1115,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetBooleanArrayElements(penv, jarr, 0);
+  d1 := penv^.GetBooleanArrayElements(penv, jarr, nil);
   i := 0;
   if len > 0 then 
   begin
@@ -1138,7 +1138,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetLongArrayElements(penv, jarr, 0);
+  d1 := penv^.GetLongArrayElements(penv, jarr, nil);
   i := 0;
   if len > 0 then 
   begin
@@ -1160,7 +1160,7 @@ var
 begin
   penv := JNIPointer;
   len := penv^.GetArrayLength(penv, jarr);
-  d1 := penv^.GetIntArrayElements(penv, jarr, 0);
+  d1 := penv^.GetIntArrayElements(penv, jarr, nil);
   i := 0;
   if len > 0 then 
   begin

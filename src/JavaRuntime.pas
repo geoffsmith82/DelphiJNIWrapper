@@ -39,9 +39,24 @@ unit JavaRuntime;
 
 interface
 {$IFDEF FPC}
-uses Classes, Windows, Registry, SysUtils, JNI, JUtils, JNIWrapper;
+uses
+  Classes,
+  Windows,
+  Registry,
+  SysUtils,
+  JNI,
+  JUtils,
+  JNIWrapper;
 {$ELSE}
-uses System.Classes, WinAPI.Windows, System.Win.Registry, System.SysUtils, JNI, JUtils, JNIWrapper,System.AnsiStrings;
+uses
+  System.Classes,
+  WinAPI.Windows,
+  System.Win.Registry,
+  System.SysUtils,
+  JNI,
+  JUtils,
+  JNIWrapper,
+  System.AnsiStrings;
 {$endif}
 
 type
