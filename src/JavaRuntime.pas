@@ -398,7 +398,7 @@ var
 begin
     // Just handle classpath and properties for now.
       
-  VMArgs2.Noptions := 1+ FProperties.Count;
+  VMArgs2.Noptions := 1 + FProperties.Count;
   if (FVerbose <> 0) or (FVerboseGC <>0) then Inc(VMArgs2.Noptions);
   if FVerboseGC <> 0 then Inc(VMArgs2.Noptions);
   if FMinHeapSize > 0 then Inc(VMArgs2.Noptions);
@@ -626,7 +626,7 @@ end;
   
 class function TJavaRuntime.GetDefault : TJavaRuntime;
 var
-  FirstChoice, SecondChoice, ThirdChoice, temp : JvmType;
+  FirstChoice, SecondChoice, temp : JvmType;
 begin
  
   if DefaultRuntime = Nil then
@@ -642,11 +642,7 @@ begin
     try
       DefaultRuntime := TJavaRuntime.Create(FirstChoice);
     except on EJavaRuntimeNotFound do
-      try
         DefaultRuntime := TJavaRuntime.Create(SecondChoice);
-      except on EJavaRuntimeNotFound do
-        DefaultRuntime :=TJavaRuntime.Create(ThirdChoice);
-      end;
     end;
   end;
   Result := DefaultRuntime;
@@ -731,10 +727,8 @@ begin
 end;
   
 function TJavaRuntime.FindJava12 : Boolean;
-var
-  I : Integer;
 begin
-  Result := False; //false;
+  Result := False;
 
 {FRuntimeLib := FindOnSystemPath('javai.dll');
   if FRuntimeLib <> '' then
