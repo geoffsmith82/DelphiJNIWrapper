@@ -55,7 +55,7 @@ uses
 
 //wrappers around the Win32 API calls.
   function GetEnvironmentString(S : String) : String;
-  procedure SetEnvironmentString(key, value : AnsiString);
+  procedure SetEnvironmentString(key, value : String);
 
   // redeclared here because in D2, the prototype in Window.pas is incorrect.
   function SearchPath(lpPath, lpFileName, lpExtension: PAnsiChar;
@@ -167,7 +167,7 @@ begin
   {$endif}
 end;
     
-procedure SetEnvironmentString(key, value : AnsiString);
+procedure SetEnvironmentString(key, value : String);
 begin
   SetEnvironmentVariable(PChar(key), PChar(value));
 end;

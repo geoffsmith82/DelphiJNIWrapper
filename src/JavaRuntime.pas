@@ -146,8 +146,8 @@ type
     // processes a bunch of command line options passed in a container.
     procedure ProcessCommandLine(Options : TStrings);
     procedure AddProperty(S: AnsiString);
-    function SanityCheck(classname, filename : AnsiString) : AnsiString;
-    function SanityCheckSource(filename : AnsiString) : AnsiString;
+    function SanityCheck(classname, filename : String) : String;
+    function SanityCheckSource(filename : String) : String;
     procedure AddToClasspath(filename : String);
     function GetVM : TJavaVM; //Instantiates the JVM
     procedure CallMain(const ClassName : AnsiString ; args : TStrings);
@@ -814,7 +814,7 @@ fields}
 function TJavaRuntime.CheckJavaRegistryKey(key : String) : boolean;
 var
   reg : TRegistry;
-  S, HotspotLib : AnsiString;
+  S, HotspotLib : String;
 begin
   Result := False;
   reg := TRegistry.Create(KEY_READ or $0100);
@@ -957,12 +957,12 @@ begin
   fprintf := printproc;
 end;
   
-function TJavaRuntime.SanityCheck(classname, filename : AnsiString) : AnsiString;
+function TJavaRuntime.SanityCheck(classname, filename : String) :String;
 begin
   Result := FClasspath.SanityCheck(classname, filename);
 end;
 
-function TJavaRuntime.SanityCheckSource(filename : AnsiString) : AnsiString;
+function TJavaRuntime.SanityCheckSource(filename : String) : String;
 begin
   Result := FClasspath.sanityCheckSource(filename);
 end;
@@ -1030,7 +1030,7 @@ end;
 
 class function TClasspath.GetBootPath : TClassPath;
 var
-  Home, ThirdPartyDir : AnsiString;
+  Home, ThirdPartyDir : String;
   SearchRec : TSearchRec;
 begin
   if bootpath = Nil then
@@ -1141,7 +1141,7 @@ end;
 
 class procedure TJavaRuntime.SetBasePath(path : String);
 var
-  Dir : AnsiString;
+  Dir : String;
 begin
   BasePath := ExpandFileName(Path);
   Dir := ExtractFilePath(ExpandFileName(BasePath));

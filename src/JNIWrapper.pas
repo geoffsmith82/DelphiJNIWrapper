@@ -965,7 +965,7 @@ begin
   Result := TStringList.Create;
   len := penv^.GetArrayLength(penv, jarr);
 
-  for I:=1 to len do
+  for I := 1 to len do
   begin
     jobj := penv^.GetObjectArrayElement(penv, jarr, I - 1);
     Result.add(JToDString(jobj));
@@ -985,10 +985,10 @@ begin
   if len > 0 then 
   begin
     repeat
-      inc(i);
+      Inc(i);
       jobj := penv^.GetObjectArrayElement(penv, jarr, I - 1);
       Result.add(JToDString(jobj)); 
-    until i=len;  
+    until i = len;
   end;
 end;
  
