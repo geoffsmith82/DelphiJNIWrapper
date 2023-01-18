@@ -88,10 +88,10 @@ type
     function SanityCheck(classname, filename : String) : String;
     // Performs similar sanity check on a .java file.
     function SanityCheckSource(filename : String) : String;
-    procedure AddDir(dir : AnsiString);
-    procedure AddPath(path : AnsiString);
+    procedure AddDir(dir : String);
+    procedure AddPath(path : String);
   public
-    function FullPath : AnsiString;
+    function FullPath : String;
     class function GetDefault : TClasspath;
     class function GetBootPath : TClasspath;
   end;
@@ -103,8 +103,8 @@ type
     FJava11 : Boolean;
     FHotspot : Boolean;
     FMS : Boolean;
-    FJavaHome : AnsiString;
-    FRuntimeLib : AnsiString;
+    FJavaHome : String;
+    FRuntimeLib : String;
     FJavaVM :  TJavaVM;
     DLLHandle : THandle;
     vmargs : JDK1_1InitArgs;
@@ -119,9 +119,9 @@ type
     FNativeStackSize : Integer;
     function FindJava11 : Boolean;
     function FindJava12 : Boolean;
-    function CheckJavaRegistryKey(key : AnsiString) : boolean;
-    function GetClasspath : AnsiString;
-    procedure SetClasspath(S: AnsiString);
+    function CheckJavaRegistryKey(key : String) : boolean;
+    function GetClasspath : String;
+    procedure SetClasspath(S : String);
     procedure SetNativeStackSize(Size : Integer);
     procedure SetJavaStackSize(Size : Integer);
     procedure SetMinHeapSize(Size : Integer);
@@ -142,20 +142,20 @@ type
     procedure InitJava2;
   public
     // processes a command-line option
-    procedure ProcessCommandLineOption(S : AnsiString);
+    procedure ProcessCommandLineOption(S : String);
     // processes a bunch of command line options passed in a container.
     procedure ProcessCommandLine(Options : TStrings);
     procedure AddProperty(S: AnsiString);
     function SanityCheck(classname, filename : AnsiString) : AnsiString;
     function SanityCheckSource(filename : AnsiString) : AnsiString;
-    procedure AddToClasspath(filename : AnsiString);
+    procedure AddToClasspath(filename : String);
     function GetVM : TJavaVM; //Instantiates the JVM
     procedure CallMain(const ClassName : AnsiString ; args : TStrings);
     procedure CallExit(val : Integer);
     procedure Wait;
-    property RuntimeLib : AnsiString read FRuntimeLib;
-    property JavaHome : AnsiString read FJavaHome;
-    property Classpath : AnsiString read getClasspath write SetClasspath;
+    property RuntimeLib : String read FRuntimeLib;
+    property JavaHome : String read FJavaHome;
+    property Classpath : String read GetClasspath write SetClasspath;
     property IsJava11 : Boolean read FJava11;
     property IsMS : Boolean read FMS;
     property Hotspot : Boolean read FHotspot write FHotspot;
@@ -181,13 +181,13 @@ type
     destructor Destroy; override;
     class function GetDefault : TJavaRuntime;
     class procedure SetJava11(Java11 : Boolean);
-    class procedure SetAppClassPath(path : AnsiString);
-    class procedure SetBasePath(path : AnsiString);
+    class procedure SetAppClassPath(path : String);
+    class procedure SetBasePath(path : String);
     class procedure SetNeedTools(B : Boolean); // a bit of a hack for use by SmartJC.
     class procedure SetClassicVM(B : Boolean);
   end;
   
-  function GetPackageName(filename : AnsiString) : AnsiString;
+  function GetPackageName(filename : String) : String;
 
 implementation
 
@@ -205,8 +205,8 @@ var
   GetCreatedVMs : TGetCreatedVMs;
   instanceCount : Integer;
   searchrec : TSearchRec;
-  AppClassPath : AnsiString; // classpath specified
-  BasePath : AnsiString; // The class considered to be the base path, found from snooping in classfile.
+  AppClassPath : String; // classpath specified
+  BasePath : String; // The class considered to be the base path, found from snooping in classfile.
   cpath : TClasspath; // the singleton TClasspath instance.
   bootpath : TClasspath; // the TClasspath that represents the boot path
   DefaultRuntime : TJavaRuntime; // singleton JavaRuntime instance.
@@ -244,11 +244,11 @@ const
   JDK_15_KEY = '\SOFTWARE\JavaSoft\JDK\10';
 
 
-  JRE11Keys : array[1..3] of AnsiString = (PLUGIN_11_KEY, IBM_JRE_11_KEY, JRE_11_KEY);
-  JDK11Keys : array[1..5] of AnsiString = (JDK_15_KEY,IBM_JDK_118_KEY, IBM_JDK_117_KEY,JDK_11_KEY,JB_KEY);
-  JRE12Keys : array[1..11] of AnsiString = (JRE_18_KEY,JRE_14_KEY, PLUGIN_14_KEY,JRE_15_KEY, PLUGIN_15_KEY,JRE_16_KEY,JRE_17_KEY,JRE_13_KEY, PLUGIN_13_KEY, JRE_12_KEY, PLUGIN_12_KEY);
+  JRE11Keys : array[1..3] of String = (PLUGIN_11_KEY, IBM_JRE_11_KEY, JRE_11_KEY);
+  JDK11Keys : array[1..5] of String = (JDK_15_KEY,IBM_JDK_118_KEY, IBM_JDK_117_KEY,JDK_11_KEY,JB_KEY);
+  JRE12Keys : array[1..11] of String = (JRE_18_KEY,JRE_14_KEY, PLUGIN_14_KEY,JRE_15_KEY, PLUGIN_15_KEY,JRE_16_KEY,JRE_17_KEY,JRE_13_KEY, PLUGIN_13_KEY, JRE_12_KEY, PLUGIN_12_KEY);
 
-  BootClasspath : AnsiString = '';
+  BootClasspath : String = '';
 
 
 function ReadRegKey(SubKey, Key:string): string;
@@ -262,7 +262,7 @@ begin
     {try if Root key exists}
     Reg.RootKey := HKEY_LOCAL_MACHINE;
     {open the Registry key}
-    if Reg.OpenKey(SubKey,false) then
+    if Reg.OpenKey(SubKey, False) then
     begin
       {read the value of the key HKEY_LOCAL_MACHINE\\Software\YourProgName\AnyParam }
       Result := Reg.ReadString(Key);
@@ -274,15 +274,15 @@ begin
   end;
 end;
 
-procedure StripComments(var Line : AnsiString; var InComment : Boolean);
+procedure StripComments(var Line : String; var InComment : Boolean);
 var
-  S : AnsiString;
+  S : String;
   I : Integer;
 begin
   S := '';
   if InComment then
   begin
-    I := AnsiPos('*/', Line);
+    I := Pos('*/', Line);
     if I>0 then
       begin
         Line := Copy(Line, 2 + I, length(Line));
@@ -293,7 +293,7 @@ begin
       Line := '';
   end
   else begin
-    I := AnsiPos('/*', Line);
+    I := Pos('/*', Line);
     if I > 0 then
       begin
         InComment := True;
@@ -303,7 +303,7 @@ begin
       end;
     Line := S + Line;
   end;
-  I := AnsiPos('//', Line);
+  I := Pos('//', Line);
   if I > 0 then
     Line := Copy(Line, 1, I - 1);
 end;
@@ -566,7 +566,7 @@ begin
   TJavaVm.CallExit(val);
 end;
 
-procedure TJavaRuntime.ProcessCommandLineOption(S : AnsiString);
+procedure TJavaRuntime.ProcessCommandLineOption(S : String);
 var
   L  : String;
   function extractSize(S : AnsiString) : Integer;
@@ -663,12 +663,12 @@ begin
   NeedsJDK := True;
 end;
 
-procedure TJavaRuntime.AddToClasspath(filename : AnsiString);
+procedure TJavaRuntime.AddToClasspath(filename : String);
 begin
   FClasspath.AddDir(filename);
 end;
   
-function TJavaRuntime.getClasspath : AnsiString;
+function TJavaRuntime.GetClasspath : String;
 var
   CPath : TClasspath;
   Reg : TRegistry;
@@ -693,7 +693,7 @@ begin
   result := CPath.Fullpath;
 end;
   
-procedure TJavaRuntime.SetClasspath(S : AnsiString);
+procedure TJavaRuntime.SetClasspath(S : String);
 begin
   FClasspath := TClasspath.GetDefault;
   FClasspath.AddPath(S);
@@ -783,7 +783,7 @@ begin
   
 // Failing that, search the Windows registry for location.
   
-  if not needsJDK then
+  if not NeedsJDK then
   begin
     for I := Low(JRE11Keys) to High(JRE11Keys) do
     begin
@@ -811,7 +811,7 @@ end;
 Returns true on success and sets the FJavaLib and FJavaHome
 fields}
 
-function TJavaRuntime.CheckJavaRegistryKey(key : AnsiString) : boolean;
+function TJavaRuntime.CheckJavaRegistryKey(key : String) : boolean;
 var
   reg : TRegistry;
   S, HotspotLib : AnsiString;
@@ -972,7 +972,7 @@ begin
   FProperties.Add(S);
 end;
 
-procedure AddAllArchives(C : TClasspath; directory, pattern : AnsiString);
+procedure AddAllArchives(C : TClasspath; directory, pattern : String);
 begin
   if FindFirst(Directory + pattern, faAnyFile, searchrec) = 0 then
   begin
@@ -986,7 +986,7 @@ end;
   
 class function TClasspath.GetDefault : TClassPath;
 var
-  Home, libjars, ThirdPartyDir : AnsiString;
+  Home, libjars, ThirdPartyDir : String;
   Runtime : TJavaRuntime;
   SearchRec : TSearchRec;
 begin
@@ -1072,7 +1072,7 @@ begin
 end;
 
 
-procedure TClasspath.AddPath(Path : AnsiString);
+procedure TClasspath.AddPath(Path : String);
 var
   Len: Integer;
   Dirs  : TStringList;
@@ -1092,7 +1092,7 @@ begin
   Dirs.Free;
 end;
   
-procedure TClasspath.AddDir(dir : AnsiString);
+procedure TClasspath.AddDir(dir : String);
 var
   S: AnsiString;
   I : Integer;
@@ -1107,7 +1107,7 @@ begin
 end;
   
 
-function TClasspath.FullPath : AnsiString;
+function TClasspath.FullPath : String;
 var
   I: Integer;
 begin
@@ -1123,12 +1123,12 @@ end;
 
 // Sets the part of the classpath that is specific to the app.
   
-class procedure TJavaRuntime.SetAppClassPath(path : AnsiString);
+class procedure TJavaRuntime.SetAppClassPath(path : String);
 begin
   AppClassPath := path;
 end;
 
-procedure addAllFilesToPath(Directory, Pattern : AnsiString; var Path : AnsiString);
+procedure AddAllFilesToPath(Directory, Pattern : String; var Path : String);
 begin
   if FindFirst(Directory + pattern, faAnyFile, searchrec) = 0 then
   begin
@@ -1139,17 +1139,17 @@ begin
     FindClose(searchrec);
 end;
 
-class procedure TJavaRuntime.SetBasePath(Path : AnsiString);
+class procedure TJavaRuntime.SetBasePath(path : String);
 var
   Dir : AnsiString;
 begin
   BasePath := ExpandFileName(Path);
   Dir := ExtractFilePath(ExpandFileName(BasePath));
-  addAllFilesToPath(Dir, '*.zip', BasePath);
+  AddAllFilesToPath(Dir, '*.zip', BasePath);
   AddAllFilesToPath(Dir, '*.jar', BasePath);
-  addAllFilesToPath(Dir + 'lib\', '*.zip', BasePath);
+  AddAllFilesToPath(Dir + 'lib\', '*.zip', BasePath);
   AddAllFilesToPath(Dir + 'lib\', '*.jar', BasePath);
-  addAllFilesToPath(Dir + 'libs\', '*.zip', BasePath);
+  AddAllFilesToPath(Dir + 'libs\', '*.zip', BasePath);
   AddAllFilesToPath(Dir + 'libs\', '*.jar', BasePath);
 {
   addAllFilesToPath(Dir + '..\lib\', '*.zip', BasePath);
@@ -1212,11 +1212,11 @@ end;
 // Get the package name inside a source file.
 // This code is a bit messy. Maybe I'll clean it up later.
   
-function GetPackageName(filename : AnsiString) : AnsiString;
+function GetPackageName(filename : String) : String;
 var
   T : TextFile;
   inComment : Boolean;
-  Line : AnsiString;
+  Line : String;
   I : Integer;
 begin
  AssignFile(T, filename);
