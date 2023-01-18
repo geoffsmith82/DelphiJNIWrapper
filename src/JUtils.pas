@@ -54,8 +54,8 @@ uses
   function ConvertStrings(Strings : TStrings) : Pointer;
 
 //wrappers around the Win32 API calls.
-  function getEnvironmentString(S : AnsiString) : AnsiString;
-  procedure setEnvironmentString(key, value : AnsiString);
+  function GetEnvironmentString(S : String) : String;
+  procedure SetEnvironmentString(key, value : AnsiString);
 
   // redeclared here because in D2, the prototype in Window.pas is incorrect.
   function SearchPath(lpPath, lpFileName, lpExtension: PAnsiChar;
@@ -157,13 +157,13 @@ begin
 end;
     
     
-function getEnvironmentString(S : AnsiString) : AnsiString;
+function GetEnvironmentString(S : String) : String;
 begin
   {$IFDEF FPC}
   Result := GetEnvironmentVariable(S)
   {$ELSE}
   if GetEnvironmentVariable(Pchar(S), @Buf, 1023) >0 then
-    Result := AnsiString(Buf);
+    Result := String(Buf);
   {$endif}
 end;
     

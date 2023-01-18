@@ -251,7 +251,7 @@ const
   BootClasspath : AnsiString = '';
 
 
-function ReadRegKey(SubKey,Key:string):ansistring;
+function ReadRegKey(SubKey, Key:string): string;
 var
   Reg: TRegistry;
   list1: TStringList;
