@@ -321,9 +321,9 @@ begin
 
   if DLLHandle = 0 then
     raise EJavaRuntimeCreation.Create('Could not load DLL ' + FRuntimeLib);
-  @CreateVM := getProcAddress(DLLHandle, 'JNI_CreateJavaVM');
-  @GetDefaultArgs := getProcAddress(DLLHandle, 'JNI_GetDefaultJavaVMInitArgs');
-  @GetCreatedVMs := getProcAddress(DLLHandle, 'JNI_GetCreatedJavaVMs');
+  @CreateVM := GetProcAddress(DLLHandle, 'JNI_CreateJavaVM');
+  @GetDefaultArgs := GetProcAddress(DLLHandle, 'JNI_GetDefaultJavaVMInitArgs');
+  @GetCreatedVMs := GetProcAddress(DLLHandle, 'JNI_GetCreatedJavaVMs');
   if (@CreateVM = Nil) or (@GetDefaultArgs = Nil) or (@GetCreatedVMs = Nil) then
     raise EJavaRuntimeCreation.Create('Dynamic Link Library ' + FRuntimeLib + ' is not valid.');
   vmargs.version := $00010008;
@@ -545,7 +545,7 @@ end;
   
 //convenience wrappers.
   
-procedure TJavaRuntime.CallMain(const ClassName : AnsiString ; args : TStrings);
+procedure TJavaRuntime.CallMain(const ClassName : AnsiString; args : TStrings);
 begin
   TJavaVM.CallMain(className, args);
 end;
@@ -569,7 +569,7 @@ end;
 procedure TJavaRuntime.ProcessCommandLineOption(S : String);
 var
   L  : String;
-  function extractSize(S : AnsiString) : Integer;
+  function extractSize(S : String) : Integer;
   begin
     if S[length(S)] = 'k' then
       Result := $400
