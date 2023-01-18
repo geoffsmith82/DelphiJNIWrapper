@@ -40,10 +40,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 interface
 {$IFDEF FPC}
-   uses Windows, Classes, SysUtils, JNI, JUtils;
-   {$ELSE}
-   uses WinAPI.Windows, System.Classes,    System.SysUtils,System.ansistrings, JNI, JUtils;
-   {$endif}
+uses
+  Windows,
+  Classes,
+  SysUtils,
+  JNI,
+  JUtils;
+{$ELSE}
+uses
+  WinAPI.Windows,
+  System.Classes,
+  System.SysUtils,
+  System.ansistrings,
+  JNI,
+  JUtils;
+{$endif}
 
 {$R-}
 
@@ -485,13 +496,13 @@ begin
   if IsGlobal then
     Result := true
   else
-    Result := (FLocalHandle <> Nil) and (FPenv = JNIPointer) ;
+    Result := (FLocalHandle <> nil) and (FPenv = JNIPointer) ;
 end;
   
 function TJavaObject.GetHandle : jobject;
 begin
   Result := FGlobalHandle;
-  if Result = Nil then
+  if Result = nil then
     Result := FLocalHandle;
 end;
 
@@ -724,7 +735,7 @@ constructor TJavaMethod.Create(cls : TJavaClass ;
     penv : PJNIEnv;
   begin
     FClass := cls;
-    if params=Nil then 
+    if params = nil then
       FSig := '()'
     else 
       FSig := '(' + params.signature + ')';
@@ -774,12 +785,12 @@ end;
     argpointer : Pointer;
   begin
     penv := JNIPointer;
-    argpointer := Nil;
-    if params <> Nil then argPointer := params.ArgPointer;
-    if jobj <> Nil then 
+    argpointer := nil;
+    if params <> nil then argPointer := params.ArgPointer;
+    if jobj <> nil then
         obj := jobj.Handle 
     else 
-        obj := Nil;
+        obj := nil;
     if FmethodTYpe = static then
       case Fretval of
          void :

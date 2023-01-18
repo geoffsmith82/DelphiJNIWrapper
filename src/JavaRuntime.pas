@@ -72,9 +72,9 @@ type
     // Given a name of a class and its filename, perform a sanity check
     // to see if the fully qualified classname is consistent with this
     // filename classpath-wise.
-    function SanityCheck(classname, filename : AnsiString) : AnsiString;
+    function SanityCheck(classname, filename : String) : String;
     // Performs similar sanity check on a .java file.
-    function SanityCheckSource(filename : AnsiString) : AnsiString;
+    function SanityCheckSource(filename : String) : String;
     procedure AddDir(dir : AnsiString);
     procedure AddPath(path : AnsiString);
   public
@@ -261,8 +261,40 @@ begin
   end;
 end;
 
-  procedure StripComments(var Line : AnsiString; var InComment : Boolean); forward;
-  
+procedure StripComments(var Line : AnsiString; var InComment : Boolean);
+var
+  S : AnsiString;
+  I : Integer;
+begin
+  S := '';
+  if InComment then
+  begin
+    I := AnsiPos('*/', Line);
+    if I>0 then
+      begin
+        Line := Copy(Line, 2 + I, length(Line));
+        InComment := False;
+        StripComments(Line, InComment);
+      end
+    else
+      Line := '';
+  end
+  else begin
+    I := AnsiPos('/*', Line);
+    if I > 0 then
+      begin
+        InComment := True;
+        S := Copy(Line, 1, I - 1);
+        Line := Copy(Line, I + 2, Length(Line));
+        StripComments(Line, InComment);
+      end;
+    Line := S + Line;
+  end;
+  I := AnsiPos('//', Line);
+  if I > 0 then
+    Line := Copy(Line, 1, I - 1);
+end;
+
 procedure TJavaRuntime.Initialize;
 begin
   if DLLHandle <> 0 then
@@ -354,15 +386,15 @@ begin
     // Just handle classpath and properties for now.
       
   VMArgs2.Noptions := 1+ FProperties.Count;
-  if (FVerbose <>0) or (FVerboseGC <>0) then inc(VMArgs2.Noptions);
-  if FVerboseGC <>0 then inc(VMArgs2.Noptions);
-  if FMinHeapSize >0 then inc(VMArgs2.Noptions);
-  if FMaxHeapSize >0 then inc(VMArgs2.Noptions);
-  if BootClasspath <> '' then inc(VMArgs2.Noptions);
-  if FEnableClassGC<>0 then inc(VMArgs2.NOptions);
-  if Assigned(FExitProc) then inc(VMargs2.NOptions);
-  if Assigned(FAbortProc)  then inc(VMArgs2.NOptions);
-  if Assigned(FPrintf) then inc(VMArgs2.NOptions);
+  if (FVerbose <> 0) or (FVerboseGC <>0) then Inc(VMArgs2.Noptions);
+  if FVerboseGC <> 0 then Inc(VMArgs2.Noptions);
+  if FMinHeapSize > 0 then Inc(VMArgs2.Noptions);
+  if FMaxHeapSize > 0 then Inc(VMArgs2.Noptions);
+  if BootClasspath <> '' then Inc(VMArgs2.Noptions);
+  if FEnableClassGC <> 0 then Inc(VMArgs2.NOptions);
+  if Assigned(FExitProc) then Inc(VMargs2.NOptions);
+  if Assigned(FAbortProc)  then Inc(VMArgs2.NOptions);
+  if Assigned(FPrintf) then Inc(VMArgs2.NOptions);
       
   vmargs2.ignoreUnrecognized := True;
   PVMOption := AllocMem(sizeof(JavaVMOPtion) * VMargs2.NOptions);
@@ -533,7 +565,7 @@ var
     else
       Result  := 1;
     if Result <> 1 then
-      S:= Copy(S, 1, length(S) - 1);
+      S := Copy(S, 1, length(S) - 1);
     Result := Result * StrToIntDef(S, 0);
   end;
 begin
@@ -1122,9 +1154,9 @@ begin
     CPath.AddPath(BasePath);
 end;
 
-function TClassPath.SanityCheck(classname, filename : AnsiString) : AnsiString;
+function TClassPath.SanityCheck(classname, filename : String) : String;
 var
-  fullFile, pathName, package, basePath, temp : AnsiString;
+  fullFile, pathName, package, basePath, temp : String;
   I : Integer;
   Oops : Boolean;
 begin
@@ -1138,10 +1170,10 @@ begin
   if I = 0 then // no slashes, anonymous package
   begin
     AddDir(pathName); // put the filename's path on the classpath
-  {$IFDEF FPC}
-     setCurrentDirectory(PChar(pathName));
+    {$IFDEF FPC}
+    SetCurrentDirectory(PChar(pathName));
     {$ELSE}
-    setCurrentDirectory(PChar(pathName));
+    SetCurrentDirectory(PChar(pathName));
     {$ENDIF}
      
     Exit;
@@ -1160,9 +1192,9 @@ begin
   Result := BasePath;
 end;
   
-function TClasspath.SanityCheckSource(filename : AnsiString) : AnsiString;
+function TClasspath.SanityCheckSource(filename : String) : String;
 var
-  Package, Classname : AnsiString;
+  Package, Classname : String;
 begin
   Package := GetPackageName(Filename);
   Classname := Package + ExtractFileName(Filename);
@@ -1205,39 +1237,5 @@ begin
  if length(Result) > 0 then Result := Result + '.';
 end;
   
-procedure StripComments(var Line : AnsiString; var InComment : Boolean);
-var
-  S : AnsiString;
-  I : Integer;
-begin
-  S := '';
-  if InComment then
-  begin
-    I := AnsiPos('*/', Line);
-    if I>0 then
-      begin
-        Line := Copy(Line, 2 + I, length(Line));
-        InComment := False;
-        StripComments(Line, InComment);
-      end
-    else
-      Line := '';
-  end
-  else begin
-    I := AnsiPos('/*', Line);
-    if I > 0 then
-      begin
-        InComment := True;
-        S := Copy(Line, 1, I - 1);
-        Line := Copy(Line, I + 2, Length(Line));
-        StripComments(Line, InComment);
-      end;
-    Line := S + Line;
-  end;
-  I := AnsiPos('//', Line);
-  if I > 0 then
-    Line := Copy(Line, 1, I - 1);
-end;
-end.
 
 {$R+}
